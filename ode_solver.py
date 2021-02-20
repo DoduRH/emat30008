@@ -12,6 +12,23 @@ def euler_step(func, x0, t0, h):
 
 	return x1
 
+def RK4_step(func, x0, t0, h):
+	# type: (Callable, float, float, float) -> float
+
+	'''
+		Performs 1 fourth Order Runge-Kutta step from t0 to t1 (t + h)
+	'''
+
+	# Calculate k 1-4
+	k1 = h * func(t0, x0)
+	k2 = h * func(t0 + h/2, x0 + k1/2)
+	k3 = h * func(t0 + h/2, x0 + k2/2) 
+	k4 = h * func(t0 + h, x0 + k3)
+
+	x1 = x0 + (k1 + 2*k2 + 2*k3 + k4)/6
+
+	return x1
+
 def solve_to(step_func, f, x0, t0, t1, hmax):
 	# type: (Callable, Callable, float, float, float, float) -> float
 	'''
@@ -60,4 +77,5 @@ def solve_ode(f, x0, t, hmax, method="euler"):
 # Dictionary of available integration methods
 methods = {
 	"euler": euler_step,
+	"rk4": RK4_step,
 }
