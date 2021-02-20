@@ -1,7 +1,8 @@
 from typing import Callable
 
 
-def euler_step(func: Callable[[float, float], float], x0: float, t0:float, h: float) -> float:
+def euler_step(func, x0, t0, h):
+	# type: (Callable, float, float, float) -> float
 	'''
 		Performs 1 Euler step from t0 to t1 (t + h)
 	'''
@@ -11,7 +12,8 @@ def euler_step(func: Callable[[float, float], float], x0: float, t0:float, h: fl
 
 	return x1
 
-def solve_to(step_func: Callable, f: Callable[[float, float], float], x0: float, t0: float, t1: float, hmax: float) -> float:
+def solve_to(step_func, f, x0, t0, t1, hmax):
+	# type: (Callable, Callable, float, float, float, float) -> float
 	'''
 		Performs integration steps using step function on f from t0 to t1 in steps no larger than hmax
 	'''
