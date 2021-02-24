@@ -1,8 +1,4 @@
-from typing import Callable, List
-
-
 def euler_step(func, x0, t0, h):
-	# type: (Callable, float, float, float) -> float
 	'''
 		Performs 1 Euler step from t0 to t1 (t + h)
 	'''
@@ -13,8 +9,6 @@ def euler_step(func, x0, t0, h):
 	return x1
 
 def RK4_step(func, x0, t0, h):
-	# type: (Callable, float, float, float) -> float
-
 	'''
 		Performs 1 fourth Order Runge-Kutta step from t0 to t1 (t + h)
 	'''
@@ -30,7 +24,6 @@ def RK4_step(func, x0, t0, h):
 	return x1
 
 def solve_to(step_func, f, x0, t0, t1, hmax):
-	# type: (Callable, Callable, float, float, float, float) -> float
 	'''
 		Performs integration steps using step function on f from t0 to t1 in steps no larger than hmax
 	'''
@@ -46,7 +39,6 @@ def solve_to(step_func, f, x0, t0, t1, hmax):
 	return x
 
 def solve_ode(f, x0, t, hmax, method="euler"):
-	# type: (Callable, float, List[float], float, str) -> List[float]
 	'''
 		generates a series of numerical solution estimates for f at points in t
 	'''
