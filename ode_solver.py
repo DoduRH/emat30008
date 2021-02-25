@@ -1,3 +1,7 @@
+from numba.core.registry import CPUDispatcher
+from numba import njit
+
+@njit
 def euler_step(func, x0, t0, h):
 	'''
 		Performs 1 Euler step from t0 to t1 (t + h)
@@ -8,6 +12,7 @@ def euler_step(func, x0, t0, h):
 
 	return x1
 
+@njit
 def RK4_step(func, x0, t0, h):
 	'''
 		Performs 1 fourth Order Runge-Kutta step from t0 to t1 (t + h)
@@ -23,6 +28,7 @@ def RK4_step(func, x0, t0, h):
 
 	return x1
 
+@njit
 def solve_to(step_func, f, x0, t0, t1, hmax):
 	'''
 		Performs integration steps using step function on f from t0 to t1 in steps no larger than hmax
@@ -51,6 +57,9 @@ def solve_ode(f, x0, t, hmax, method="euler"):
 	else:
 		# If string is not a recognised method
 		raise ValueError(f"method must be one of {list(methods.keys())}")
+
+	if type(f) != CPUDispatcher:
+		f = njit(f)
 
 	# Set up intitial variables
 	x_out = []
