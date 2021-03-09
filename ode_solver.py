@@ -1,9 +1,18 @@
 import numpy as np
 
 def euler_step(funcs, initial_values, t0, h):
-	'''
-		Performs 1 Euler step from t0 to t1 (t + h)
-	'''
+	"""Performs 1 Euler step from t0 to t1 (t + h)
+
+	Args:
+		funcs (list): List of ode functions
+		initial_values (list): List of initial values
+		t0 (float): Starting value for Euler step
+		h (float): Step size between t0 and t1
+
+	Returns:
+		list: List of values at t1
+	"""
+
 	# Do step for each function
 	x1 = []
 	for x0, func in zip(initial_values, funcs):
@@ -12,9 +21,17 @@ def euler_step(funcs, initial_values, t0, h):
 	return x1
 
 def RK4_step(funcs, initial_values, t0, h):
-	'''
-		Performs 1 fourth Order Runge-Kutta step from t0 to t1 (t + h)
-	'''
+	"""Performs 1 fourth Order Runge-Kutta step from t0 to t1 (t + h)
+
+	Args:
+		funcs (list): List of ode functions
+		initial_values (list): List of initial values
+		t0 (float): Starting value for RK4 step
+		h (float): Step size between t0 and t1
+
+	Returns:
+		list: List of values at t1
+	"""
 
 	initial_values = np.array(initial_values)
 	
@@ -43,9 +60,19 @@ def RK4_step(funcs, initial_values, t0, h):
 	return x1
 
 def solve_to(step_func, f, x0, t0, t1, hmax):
-	'''
-		Performs integration steps using step function on f from t0 to t1 in steps no larger than hmax
-	'''
+	"""Perform multiple steps between t0 and t1 with max stepsize of hmax
+
+	Args:
+		step_func (function): Function to use for each step
+		f (list): List of functions to integrate over
+		x0 (list): Initial conditions
+		t0 (float): Starting point for integration
+		t1 (float): End point for integration
+		hmax (float): Max jump for each step
+
+	Returns:
+		list: List of values at t1
+	"""
 	t = t0
 	x = x0
 	while t + hmax < t1:
@@ -58,9 +85,18 @@ def solve_to(step_func, f, x0, t0, t1, hmax):
 	return x
 
 def solve_ode(funcs, x0, t, hmax, method="euler"):
-	'''
-		generates a series of numerical solution estimates for f at points in t
-	'''
+	"""Solve system of ODEs returning value at each point in t
+
+	Args:
+		funcs (list): List of functions to make the system of ODEs
+		x0 (Initial conditions): Initial conditions
+		t (list): Values of t to solve for
+		hmax (float): Max stepsize
+		method (str, optional): Method to use ("Euler" or "Rk4"). Defaults to "euler".
+
+	Returns:
+		list: List values for each t
+	"""
 
 	# get step function from method string
 	method = method.lower()
