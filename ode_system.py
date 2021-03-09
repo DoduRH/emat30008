@@ -16,12 +16,14 @@ initial = [
     1,
 ]
 
-t = np.linspace(0, 10, 50)
+t = np.linspace(0, 20, 100)
 
 analytic_sol = [
     np.sin(t) - 2* (-np.cos(t)),
     np.cos(t) - 2* (np.sin(t)),
 ]
+
+stepsize = 0.1
 
 # %%
 def funcs_wrapper(U, t, funcs):
@@ -34,8 +36,9 @@ def funcs_wrapper(U, t, funcs):
 g = lambda U, t: funcs_wrapper(U, t, funcs)
 
 # %%
-rk4_solution = np.array(solve_ode(funcs, initial, t, 0.1, "rk4"))
-euler_solution = np.array(solve_ode(funcs, initial, t, 0.1, "euler"))
+# Get solutions for RK4 and euler
+rk4_solution = np.array(solve_ode(funcs, initial, t, stepsize, "rk4"))
+euler_solution = np.array(solve_ode(funcs, initial, t, stepsize, "euler"))
 
 sols = {
     "rk4 solution x": rk4_solution[:,1],
@@ -46,7 +49,8 @@ sols = {
     "analytic y": analytic_sol[1],
 }
 
-
+# %%
+# Plot RK4, Euler and analytic solutions
 labels = []
 for i, (label, y) in enumerate(sols.items()):
     plt.plot(t, y)
@@ -55,9 +59,10 @@ for i, (label, y) in enumerate(sols.items()):
 plt.xlabel("Time (t)")
 plt.ylabel("y")
 
-plt.title(r'Comparing the analytic and computed solutions to $\ddot{x} = x$ with initial conditions x = \mstep size of 0.1 between 0 and 10')
+plt.title(f'Comparing the analytic and computed solutions to $\\ddot x = x$\nwith initial conditions x = {initial[0]}, y = {initial[1]} and step size of {stepsize} for ${min(t)} \\leq t \\leq {max(t)}$')
 
 plt.legend(labels)
 
-plt.savefig("graphs/system of ode solution.svg")
+plt.savefig(f"graphs/system of ode solution {min(t)}-{max(t)}.svg")
+plt.show()
 # %%
