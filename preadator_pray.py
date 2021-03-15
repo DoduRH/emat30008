@@ -63,6 +63,7 @@ plt.legend(labels)
 plt.show()
 
 # %%
+labels = []
 for label, (x, y) in phase_sols.items():
     plt.plot(x, y)
     plt.xlabel("x")
