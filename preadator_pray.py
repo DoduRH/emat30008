@@ -40,7 +40,7 @@ phase_sols = {
 # %%
 from repeat_finder import find_repeats
 
-repeats = [find_repeats(rk4_solution[:,0], 6), find_repeats(rk4_solution[:,1], 6)]
+repeats = find_repeats(rk4_solution, 0.01)
 print(f'Repeats found at {repeats[0]} and {repeats[1]}')
 
 # %%
