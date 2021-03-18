@@ -41,16 +41,16 @@ phase_sols = {
 # %%
 from repeat_finder import find_repeats
 
-print(find_repeats(rk4_solution))
+print(find_repeats(rk4_solution, abs_tol=0.07))
 
 guess = [0.5, 0.5]
 
 g = lambda U: [
-    *(U[:2] - solve_ode(funcs, U[:2], [0, U[2]], 0.1, "RK4")[-1]),
+    *(U[:-1] - solve_ode(funcs, U[:-1], [0, U[-1]], 0.1, "RK4")[-1]),
     U[0] * (1 - U[0]) - (alpha * U[0] * U[1]) / (delta + U[0]), # dx/dt(0) = 0
 ]
 
-repeats, infodict, ier, mesg = fsolve(g, np.array([*guess, 25]), full_output=True)
+repeats, infodict, ier, mesg = fsolve(g, np.array([*guess, 22]), full_output=True)
 
 #repeats, period = find_repeats(rk4_solution, 0.01)
 print(f'Repeats found at {repeats[0]} and {repeats[1]} with period of {repeats[2]}')
