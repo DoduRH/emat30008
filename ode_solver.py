@@ -14,9 +14,9 @@ def euler_step(funcs, initial_values, t0, h):
 	"""
 
 	# Do step for each function
-	x1 = []
+	x1 = np.array([])
 	for x0, func in zip(initial_values, funcs):
-		x1.append(x0 + func(t0, *initial_values)*h)
+		np.append(x1, x0 + func(t0, *initial_values)*h)
 
 	return x1
 
@@ -32,30 +32,28 @@ def RK4_step(funcs, initial_values, t0, h):
 	Returns:
 		list: List of values at t1
 	"""
-
-	initial_values = np.array(initial_values)
 	
 	# Calculate k 1-4 for each function
-	k1 = []
+	k1 = np.array([])
 	for func in funcs:
-		k1.append(h * func(t0, *initial_values))
+		k1 = np.append(k1, h * func(t0, *initial_values))
 
-	k2 = []
+	k2 = np.array([])
 	for func, k in zip(funcs, k1):
-		k2.append(h * func(t0 + h/2, *(initial_values + k/2)))
+		k2 = np.append(k2, h * func(t0 + h/2, *(initial_values + k/2)))
 	
-	k3 = []
+	k3 = np.array([])
 	for func, k in zip(funcs, k2):
-		k3.append(h * func(t0 + h/2, *(initial_values + k/2)))
+		k3 = np.append(k3, h * func(t0 + h/2, *(initial_values + k/2)))
 	
-	k4 = []
+	k4 = np.array([])
 	for func, k in zip(funcs, k3):
-		k4.append(h * func(t0 + h, *(initial_values + k)))
+		k4 = np.append(k4, h * func(t0 + h, *(initial_values + k)))
 
 	# Calulate next x's
-	x1 = []
+	x1 = np.array([])
 	for x0, m1, m2, m3, m4 in zip(initial_values, k1, k2, k3, k4):
-		x1.append(x0 + (m1 + 2*m2 + 2*m3 + m4)/6)
+		x1 = np.append(x1, x0 + (m1 + 2*m2 + 2*m3 + m4)/6)
 
 	return x1
 
@@ -108,21 +106,25 @@ def solve_ode(funcs, x0, t, hmax, method="euler"):
 		raise ValueError(f"method must be one of {list(methods.keys())}")
 
 	# Set up intitial variables
-	x_out = []
+	x_out = np.empty((len(t), 2))
 	t_start = t[0]
 	# Make sure x is a list of initial conditions
-	if type(x0) != list:
-		x0 = [x0]
+	if type(x0) != np.ndarray:
+		if type(x0) == list:
+			x = np.array(x0)
+		else:
+			x = np.array([x0])
+	else:
 	# copy initial values list
-	x = x0.copy()
+		x = x0.copy()
 	
 	if type(funcs) != list:
 		funcs = [funcs]
 
 	# Solve between values t_end and t_start
-	for t_end in t:
+	for row, t_end in enumerate(t):
 		x = solve_to(step_func, funcs, x, t_start, t_end, hmax)
-		x_out.append(x)
+		x_out[row, :] = x
 		# Update start range
 		t_start = t_end
 

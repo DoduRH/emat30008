@@ -3,6 +3,7 @@
 from ode_solver import solve_ode
 import numpy as np
 import matplotlib.pyplot as plt
+from scipy.optimize import fsolve
 
 # %%
 # Setup system of equations
@@ -11,8 +12,8 @@ delta = 0.1
 beta = 0.2
 
 funcs = [
-    lambda t, x, y: x * (1 - x) - (alpha * x * y) / (delta + x), # x
-    lambda t, x, y: beta * y * (1 - (y/x)), # y
+    lambda t, x, y: x * (1 - x) - (alpha * x * y) / (delta + x), # dx/dt
+    lambda t, x, y: beta * y * (1 - (y/x)), # dy/dt
 ]
 
 initial = [
@@ -40,8 +41,21 @@ phase_sols = {
 # %%
 from repeat_finder import find_repeats
 
-repeats, period = find_repeats(rk4_solution, 0.01)
-print(f'Repeats found at {repeats[0]} and {repeats[1]}')
+print(find_repeats(rk4_solution))
+
+guess = [0.5, 0.5]
+
+g = lambda U: [
+    *(U[:2] - solve_ode(funcs, U[:2], [0, U[2]], 0.1, "RK4")[-1]),
+    U[0] * (1 - U[0]) - (alpha * U[0] * U[1]) / (delta + U[0]), # dx/dt(0) = 0
+]
+
+repeats, infodict, ier, mesg = fsolve(g, np.array([*guess, 25]), full_output=True)
+
+#repeats, period = find_repeats(rk4_solution, 0.01)
+print(f'Repeats found at {repeats[0]} and {repeats[1]} with period of {repeats[2]}')
+
+print(f'{g(repeats)=}\n{infodict=}\n{ier=}\n{mesg=}')
 
 # %%
 # Plot RK4, Euler and analytic solutions
@@ -49,18 +63,19 @@ labels = []
 colours = [u'#1f77b4', u'#ff7f0e']
 
 # %%
-plt.xlabel("Time (t)")
-for repeat, (label, y), colour in zip(repeats, sols.items(), colours):
-    plt.plot(t, y, colour)
-    labels.append(label)
+if False:
+    plt.xlabel("Time (t)")
+    for repeat, (label, y), colour in zip(repeats, sols.items(), colours):
+        plt.plot(t, y, colour)
+        labels.append(label)
 
-    plt.hlines(repeat, np.amin(t), np.amax(t), colour)
+        plt.hlines(repeat, np.amin(t), np.amax(t), colour)
 
-plt.ylabel("y")
+    plt.ylabel("y")
 
-plt.legend(labels)
+    plt.legend(labels)
 
-plt.show()
+    plt.show()
 
 # %%
 labels = []
@@ -69,7 +84,7 @@ for label, (x, y) in phase_sols.items():
     plt.xlabel("x")
     labels.append(label)
 
-plt.scatter(*repeats)
+plt.scatter(*repeats[:2])
 
 plt.ylabel("y")
 
