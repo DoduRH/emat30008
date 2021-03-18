@@ -50,12 +50,10 @@ g = lambda U: [
     U[0] * (1 - U[0]) - (alpha * U[0] * U[1]) / (delta + U[0]), # dx/dt(0) = 0
 ]
 
-repeats, infodict, ier, mesg = fsolve(g, np.array([*guess, 22]), full_output=True)
+repeats = fsolve(g, np.array([*guess, 22]))
 
 #repeats, period = find_repeats(rk4_solution, 0.01)
 print(f'Repeats found at {repeats[0]} and {repeats[1]} with period of {repeats[2]}')
-
-print(f'{g(repeats)=}\n{infodict=}\n{ier=}\n{mesg=}')
 
 # %%
 # Plot RK4, Euler and analytic solutions
