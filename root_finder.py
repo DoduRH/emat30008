@@ -1,28 +1,6 @@
 import numpy as np
 
 
-def fdash(f, x, pos=0, epsilon=1e-10):
-    """Get approximate value for f'(x) using f(x+-epsilon)
-
-    Args:
-        f (function): Function to differentiate
-        x (float): Point to integrate about
-        epsilon (float, optional): Small offset to calculate differential. Defaults to 1e-10.
-
-    Returns:
-        float: f'(x)
-    """
-    x1 = x.copy()
-    x2 = x.copy()
-
-    x1[pos] = x1[pos] - epsilon
-    x2[pos] = x2[pos] + epsilon
-
-    y1 = f(*x1)
-    y2 = f(*x2)
-
-    return (y2 - y1) / (2*epsilon)
-
 def jacobian_matrix(f, x, eps=1e-10):
     J = np.zeros([len(x), len(x)], dtype=np.float64)
 
