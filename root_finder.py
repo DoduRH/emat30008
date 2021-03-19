@@ -2,6 +2,16 @@ import numpy as np
 
 
 def jacobian_matrix(f, x, eps=1e-10):
+    """Numerically approximate jacobian matrix for f
+
+    Args:
+        f (function): (Multivariate) function
+        x (list): Points to calculate jacobian
+        eps (float, optional): Range of f to use for calculating jacobian. Defaults to 1e-10.
+
+    Returns:
+        np.ndarray: Jacobian matrix approximation for f at x
+    """
     J = np.zeros([len(x), len(x)], dtype=np.float64)
 
     for i, _ in enumerate(x):
