@@ -1,5 +1,4 @@
 import numpy as np
-from collections.abc import Iterable
 
 
 def fdash(f, x, pos=0, epsilon=1e-10):
@@ -25,7 +24,7 @@ def fdash(f, x, pos=0, epsilon=1e-10):
     return (y2 - y1) / (2*epsilon)
 
 def jacobian_matrix(f, x, eps=1e-10):
-    J = np.zeros([len(x), len(x)], dtype=np.float32)
+    J = np.zeros([len(x), len(x)], dtype=np.float64)
 
     for i, _ in enumerate(x):
         x1 = x.copy()
@@ -52,7 +51,14 @@ def newton_step(f, u):
         float: Improved estimate for solution to f(u) = 0
     """
     jacobian = jacobian_matrix(f, u)
-    return u - np.matmul(np.linalg.inv(jacobian), f(u))
+    # Ensure jacobian is not singular and calculate the inverse
+    try:
+        inverse = np.linalg.inv(jacobian)
+    except np.linalg.LinAlgError:
+        # Raise error if inverse is failed
+        raise ValueError("Root finding was unsucsessful due to singular jacobian matrix")
+
+    return u - np.matmul(inverse, f(u))
 
 def find_root(f, u):
     """Calculates x where f(x) = 0
@@ -64,11 +70,13 @@ def find_root(f, u):
     Returns:
         float: Approximate value for x
     """
-    if not isinstance(u, Iterable):
-        u = np.array([u], dtype=np.float32)
-
-    elif type(u) != np.ndarray:
-        u = np.array(u, dtype=np.float32)
+    # Clean initial guess to numpy array
+    # Try unpacking u, otherwise just use u as list
+    # to ensure 1D array of initial guesses
+    try:
+        u = np.array([*u], dtype=np.float64)
+    except TypeError:
+        u = np.array([u], dtype=np.float64)
 
     u_old = np.ones(u.shape) * np.inf
 
@@ -78,6 +86,9 @@ def find_root(f, u):
     return u
 
 def main():
+    # Scalar root find test
+    print(f"{find_root(lambda x: x ** 2 - 2 * x - 3, 4)=}")
+
     # Setup preadator prey equation
     alpha = 1
     delta = 0.1
