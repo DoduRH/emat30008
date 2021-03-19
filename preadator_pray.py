@@ -3,7 +3,7 @@
 from ode_solver import solve_ode
 import numpy as np
 import matplotlib.pyplot as plt
-from scipy.optimize import fsolve
+from root_finder import find_root
 
 # %%
 # Setup system of equations
@@ -45,12 +45,12 @@ print(find_repeats(rk4_solution, abs_tol=0.07))
 
 guess = [0.5, 0.5]
 
-g = lambda U: [
+g = lambda U: np.array([
     *(U[:-1] - solve_ode(funcs, U[:-1], [0, U[-1]], 0.1, "RK4")[-1]),
     U[0] * (1 - U[0]) - (alpha * U[0] * U[1]) / (delta + U[0]), # dx/dt(0) = 0
-]
+])
 
-repeats = fsolve(g, np.array([*guess, 22]))
+repeats = find_root(g, np.array([*guess, 22]))
 
 #repeats, period = find_repeats(rk4_solution, 0.01)
 print(f'Repeats found at {repeats[0]} and {repeats[1]} with period of {repeats[2]}')
