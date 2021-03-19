@@ -59,12 +59,7 @@ def find_root(f, u):
         float: Approximate value for x
     """
     # Clean initial guess to numpy array
-    # Try unpacking u, otherwise just use u as list
-    # to ensure 1D array of initial guesses
-    try:
-        u = np.array([*u], dtype=np.float64)
-    except TypeError:
-        u = np.array([u], dtype=np.float64)
+    u = np.array(u, dtype=np.float64).reshape(-1)
 
     u_old = np.ones(u.shape) * np.inf
 
