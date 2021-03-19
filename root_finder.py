@@ -38,6 +38,7 @@ def newton_step(f, u):
     Returns:
         float: Improved estimate for solution to f(u) = 0
     """
+    # TODO: Pass epsilon from find_root
     jacobian = jacobian_matrix(f, u)
     # Ensure jacobian is not singular and calculate the inverse
     try:
@@ -63,6 +64,7 @@ def find_root(f, u):
 
     u_old = np.ones(u.shape) * np.inf
 
+    # TODO: Allow atol and/or rtol to be specified in arguments
     while not np.allclose(u, u_old):
         u_old = u
         u = newton_step(f, u)
