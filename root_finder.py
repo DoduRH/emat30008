@@ -1,29 +1,17 @@
 import numpy as np
 
 
-def fdash(f, x, pos=0, epsilon=1e-10):
-    """Get approximate value for f'(x) using f(x+-epsilon)
+def jacobian_matrix(f, x, eps=1e-10):
+    """Numerically approximate jacobian matrix for f
 
     Args:
-        f (function): Function to differentiate
-        x (float): Point to integrate about
-        epsilon (float, optional): Small offset to calculate differential. Defaults to 1e-10.
+        f (function): (Multivariate) function
+        x (list): Points to calculate jacobian
+        eps (float, optional): Range of f to use for calculating jacobian. Defaults to 1e-10.
 
     Returns:
-        float: f'(x)
+        np.ndarray: Jacobian matrix approximation for f at x
     """
-    x1 = x.copy()
-    x2 = x.copy()
-
-    x1[pos] = x1[pos] - epsilon
-    x2[pos] = x2[pos] + epsilon
-
-    y1 = f(*x1)
-    y2 = f(*x2)
-
-    return (y2 - y1) / (2*epsilon)
-
-def jacobian_matrix(f, x, eps=1e-10):
     J = np.zeros([len(x), len(x)], dtype=np.float64)
 
     for i, _ in enumerate(x):
@@ -33,8 +21,8 @@ def jacobian_matrix(f, x, eps=1e-10):
         x1[i] += eps
         x2[i] -= eps
 
-        f1 = f(x1)
-        f2 = f(x2)
+        f1 = np.array(f(x1))
+        f2 = np.array(f(x2))
 
         J[:,i] = (f1 - f2) / (2 * eps)
 
@@ -71,12 +59,7 @@ def find_root(f, u):
         float: Approximate value for x
     """
     # Clean initial guess to numpy array
-    # Try unpacking u, otherwise just use u as list
-    # to ensure 1D array of initial guesses
-    try:
-        u = np.array([*u], dtype=np.float64)
-    except TypeError:
-        u = np.array([u], dtype=np.float64)
+    u = np.array(u, dtype=np.float64).reshape(-1)
 
     u_old = np.ones(u.shape) * np.inf
 
@@ -99,10 +82,10 @@ def main():
         lambda t, x, y: beta * y * (1 - (y/x)), # dy/dt
     ]
 
-    g = lambda U: np.array([
+    g = lambda U: [
         *(U[:-1] - solve_ode(funcs, U[:-1], [0, U[-1]], 0.1, "RK4")[-1]),
         U[0] * (1 - U[0]) - (alpha * U[0] * U[1]) / (delta + U[0]), # dx/dt(0) = 0
-    ])
+    ]
 
     # Run find roots with prediction of x = 0.5, y = 0.5 and T = 22
     roots = find_root(g, np.array([0.5, 0.5, 22]))
