@@ -21,8 +21,8 @@ def jacobian_matrix(f, x, eps=1e-10):
         x1[i] += eps
         x2[i] -= eps
 
-        f1 = f(x1)
-        f2 = f(x2)
+        f1 = np.array(f(x1))
+        f2 = np.array(f(x2))
 
         J[:,i] = (f1 - f2) / (2 * eps)
 
@@ -87,10 +87,10 @@ def main():
         lambda t, x, y: beta * y * (1 - (y/x)), # dy/dt
     ]
 
-    g = lambda U: np.array([
+    g = lambda U: [
         *(U[:-1] - solve_ode(funcs, U[:-1], [0, U[-1]], 0.1, "RK4")[-1]),
         U[0] * (1 - U[0]) - (alpha * U[0] * U[1]) / (delta + U[0]), # dx/dt(0) = 0
-    ])
+    ]
 
     # Run find roots with prediction of x = 0.5, y = 0.5 and T = 22
     roots = find_root(g, np.array([0.5, 0.5, 22]))
