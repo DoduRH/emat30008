@@ -36,6 +36,7 @@ def shoot(f, initial, tmax=200):
     divisor = 2
     
     # This assumes the minimum period is 1
+    # FIXME: This method doesn't work, need to check f(u) = f(0), not g(u) = 0
     while divisor < orbit[-1]: 
         while np.allclose(Gx, 0, atol=1e-3):
             orbit[-1] /= divisor
