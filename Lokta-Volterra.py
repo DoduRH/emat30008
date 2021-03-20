@@ -1,9 +1,11 @@
 # %%
+# Imports
 from ode_solver import solve_ode
 from numerical_shooting import shoot
 import numpy as np
 import matplotlib.pyplot as plt
 
+# %%
 # Setup equations
 # Lokta Volterra variables
 alpha = 1
@@ -16,11 +18,6 @@ funcs = [
     lambda t, x, y: beta * y * (1 - (y/x)), # dy/dt
 ]
 
-g = lambda U: [
-    *(U[:-1] - solve_ode(funcs, U[:-1], [0, U[-1]], 0.1, "RK4")[-1]),
-    funcs[0](U[-1], *U[:-1]), # dx/dt(0) = 0
-]
-
 # Lokta-Voltera initial conditions
 initial = [
     0.25,
@@ -28,8 +25,6 @@ initial = [
 ]
 
 x, y, T = shoot(funcs, initial)
-
-print(f'{g([x, y, T])=}')
 
 print(f'starting position {x}, {y} with period {T}')
 

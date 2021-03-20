@@ -17,6 +17,7 @@ def shoot(f, initial, tmax=200):
     """
 
     # Find approximate location of periodic behaviour
+    # TODO: Steadily increment tmax until full period is found?
     rk4_solution = solve_ode(f, initial, np.linspace(0, tmax, 500), 0.1, "rk4")
     initial_conditions, period = find_repeats(rk4_solution, abs_tol=0.08)
 
@@ -32,16 +33,16 @@ def shoot(f, initial, tmax=200):
 
     # Make sure only singular orbit was found by dividing the period 
     # period until it no longer gives g(orbit) approx= 0
-    Gx = orbit[:-1]
+    x0 = orbit[:-1]
     divisor = 2
     
     # This assumes the minimum period is 1
     while divisor < orbit[-1]: 
-        while np.allclose(orbit[:-1], Gx, atol=1e-3):
+        while np.allclose(orbit[:-1], x0, atol=1e-3):
             orbit[-1] /= divisor
-            Gx = solve_ode(f, orbit[:-1], [0, orbit[-1]], 0.1, "RK4")[-1]
+            x0 = solve_ode(f, orbit[:-1], [0, orbit[-1]], 0.1, "RK4")[-1]
         orbit[-1] *= divisor # revert final division
-        Gx = orbit[:-1] # Reset Gx
+        x0 = orbit[:-1] # Reset x0
         divisor += 1
         
     # Run fsolve once more to re-align to a single orbit
