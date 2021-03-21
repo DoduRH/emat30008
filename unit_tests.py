@@ -1,6 +1,7 @@
 import unittest
 import numpy as np
 from ode_solver import solve_ode
+from numerical_shooting import shoot
 
 def Lokta_Volterra(t, x, y):
     """Lokta-Volterra function
@@ -113,6 +114,22 @@ class ODETests(unittest.TestCase):
 
         # FIXME: This test fails
         self.assertRaises(ArithmeticError, solve_ode, eq, initial, t, 0.1, "rk4")
+        pass
+
+class numericalShootingTests(unittest.TestCase):
+    def test_lokta_volterra(self):
+        """Check valid solution is found for lokta volterra equation
+        """
+        pass
+
+    def test_low_tmax(self):
+        """Check suitable error is raised when no period is found
+        """
+        pass
+    
+    def test_incorrect_dimensions(self):
+        """Check ValueError is raised when the function and initial conditions have different dimensions
+        """
         pass
 
 if __name__ == "__main__":
