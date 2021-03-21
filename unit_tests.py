@@ -132,8 +132,8 @@ class numericalShootingTests(unittest.TestCase):
         """Check valid solution is found for lokta volterra equation
         """
         x, y, period = shoot(Lokta_Volterra, [0.25, 0.25])
-        # TODO: [0.10105101,  0.1807346 , 21.08366319] is hardcoded in, better way of testing if shoot has worked?
-        self.assertTrue(np.allclose([x, y, period], [0.10105101,  0.1807346 , 21.08366319]))
+        # XXX: Add a check for a single period?
+        self.assertTrue(np.allclose([x, y], solve_ode(Lokta_Volterra, [x, y], [0, period], hmax=0.1, method="rk4")[-1]))
         pass
 
     def test_low_tmax(self):
