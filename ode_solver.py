@@ -16,7 +16,7 @@ def euler_step(funcs, initial_values, t0, h):
 	# Do step for each function
 	x1 = np.array([])
 	for x0, func in zip(initial_values, funcs):
-		np.append(x1, x0 + func(t0, *initial_values)*h)
+		x1 = np.append(x1, x0 + func(t0, *initial_values)*h)
 
 	return x1
 
@@ -106,7 +106,6 @@ def solve_ode(funcs, x0, t, hmax, method="euler"):
 		raise ValueError(f"method must be one of {list(methods.keys())}")
 
 	# Set up intitial variables
-	x_out = np.empty((len(t), 2))
 	t_start = t[0]
 	# Make sure x is a list of initial conditions
 	if type(x0) != np.ndarray:
@@ -117,12 +116,14 @@ def solve_ode(funcs, x0, t, hmax, method="euler"):
 	else:
 	# copy initial values list
 		x = x0.copy()
+	x_out = np.empty((len(t), len(x)))
 	
 	if type(funcs) != list:
 		funcs = [funcs]
 
+	x_out[0, :] = x
 	# Solve between values t_end and t_start
-	for row, t_end in enumerate(t):
+	for row, t_end in enumerate(t[1:], start=1):
 		x = solve_to(step_func, funcs, x, t_start, t_end, hmax)
 		x_out[row, :] = x
 		# Update start range
