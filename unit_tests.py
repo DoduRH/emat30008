@@ -110,8 +110,15 @@ class rootFindingTests(unittest.TestCase):
         """
         y = lambda x: x + 4
         root = find_root(y, 1023)
-        self.assertTrue(np.allclose(root, -4))
+        self.assertTrue(np.allclose(y(root), 0))
         pass
+
+    def test_quadratic(self):
+        y = lambda x: x ** 2 - 4 * x + 2
+        root = find_root(y, 1023)
+        self.assertTrue(np.allclose(y(root), 0))
+        pass
+        
 
 
 class numericalShootingTests(unittest.TestCase):
