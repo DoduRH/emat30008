@@ -40,11 +40,7 @@ def newton_step(f, u):
     """
     jacobian = jacobian_matrix(f, u)
     # Ensure jacobian is not singular and calculate the inverse
-    try:
-        inverse = np.linalg.inv(jacobian)
-    except np.linalg.LinAlgError:
-        # Raise error if inverse is failed
-        raise ValueError("Root finding was unsucsessful due to singular jacobian matrix")
+    inverse = np.linalg.inv(jacobian)
 
     return u - np.matmul(inverse, f(u))
 

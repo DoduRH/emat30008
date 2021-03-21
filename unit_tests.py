@@ -121,8 +121,8 @@ class rootFindingTests(unittest.TestCase):
         """
         y = lambda x: 1/x # dy/dt
 
-        # FIXME: This test fails
-        self.assertRaises(ArithmeticError, find_root, y, 0)
+        # XXX: Should this raise a more specific error than LinAlgError
+        self.assertRaises(np.linalg.LinAlgError, find_root, y, 0)
         pass
 
 class numericalShootingTests(unittest.TestCase):
