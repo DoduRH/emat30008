@@ -99,10 +99,20 @@ class ODETests(unittest.TestCase):
         self.assertRaises(ValueError, solve_ode, eq, initial, t, 0.1, "rk4")
         pass
 
-    def test_no_solution(self):
-        """Check ArithmeticError is raised when equations have n/0
+    def test_undefined_arithmetic(self):
+        """Check ArithmeticError is raised when equations have arithmetic error (e.g. divide-by-zero)
         """
-        # TODO: Add test (dx/dt = x/0)
+        eq = [
+            lambda t, x, y: y, # dx/dt
+            lambda t, x, y: -x/ (2*x-y), # dy/dt
+        ]
+
+        initial = [1, 2]
+
+        t = np.linspace(0, 10, 10)
+
+        # FIXME: This test fails
+        self.assertRaises(ArithmeticError, solve_ode, eq, initial, t, 0.1, "rk4")
         pass
 
 if __name__ == "__main__":
