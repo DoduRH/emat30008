@@ -114,6 +114,8 @@ class numericalShootingTests(unittest.TestCase):
     def test_low_tmax(self):
         """Check suitable error is raised when no period is found
         """
+        # FIXME: Currently results in infinite loop in fsolve
+        self.assertRaises(ValueError, shoot, Lokta_Volterra, [0.25, 0.25], 20)
         pass
     
     def test_incorrect_dimensions(self):
