@@ -3,6 +3,16 @@ import numpy as np
 from ode_solver import solve_ode
 
 def Lokta_Volterra(t, x, y):
+    """Lokta-Volterra function
+
+    Args:
+        t (float): time
+        x (float): x
+        y (float): y
+
+    Returns:
+        list: x, y at n+1
+    """
     # Setup equations
     # Lokta Volterra variables
     alpha = 1
@@ -17,6 +27,8 @@ def Lokta_Volterra(t, x, y):
 
 class ODETests(unittest.TestCase):
     def test_1d(self):
+        """Test single ODE against analytic solution
+        """
         eq = lambda t, x: x # dx/dt
         t = np.linspace(0, 10, 10)
         analytic_sol = np.exp(t)
@@ -27,6 +39,8 @@ class ODETests(unittest.TestCase):
         pass
 
     def test_2d(self):
+        """Test system of 2 ODEs agains analytic solution
+        """
         eq = [
             lambda t, x, y: y, # x
             lambda t, x, y: -x, # y
@@ -50,6 +64,8 @@ class ODETests(unittest.TestCase):
         pass
 
     def test_3d(self):
+        """Test system of 3 ODEs agains analytic solution
+        """
         pass
 
     def test_fewer_initials(self):
@@ -84,6 +100,9 @@ class ODETests(unittest.TestCase):
         pass
 
     def test_no_solution(self):
+        """Check ArithmeticError is raised when equations have n/0
+        """
+        # TODO: Add test (dx/dt = x/0)
         pass
 
 if __name__ == "__main__":
