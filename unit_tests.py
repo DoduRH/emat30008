@@ -1,3 +1,5 @@
+from repeat_finder import TimePeriodNotFoundError
+from numpy.core.fromnumeric import repeat
 from root_finder import find_root
 import unittest
 import numpy as np
@@ -137,8 +139,7 @@ class numericalShootingTests(unittest.TestCase):
     def test_low_tmax(self):
         """Check suitable error is raised when no period is found
         """
-        # FIXME: Currently results in infinite loop in fsolve
-        #self.assertRaises(ValueError, shoot, Lokta_Volterra, [0.25, 0.25], 20)
+        self.assertRaises(TimePeriodNotFoundError, shoot, Lokta_Volterra, [0.25, 0.25], 20)
         pass
     
     def test_incorrect_dimensions(self):
