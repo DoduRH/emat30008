@@ -3,28 +3,14 @@ import numpy as np
 from ode_solver import solve_ode
 from numerical_shooting import shoot
 
-def Lokta_Volterra(t, x, y):
-    """Lokta-Volterra function
+alpha = 1
+delta = 0.1
+beta = 0.2
 
-    Args:
-        t (float): time
-        x (float): x
-        y (float): y
-
-    Returns:
-        list: x, y at n+1
-    """
-    # Setup equations
-    # Lokta Volterra variables
-    alpha = 1
-    delta = 0.1
-    beta = 0.2
-
-    # Lokta-Volterra equations
-    x1 =  x * (1 - x) - (alpha * x * y) / (delta + x) # dx/dt
-    y1 = beta * y * (1 - (y/x)) # dy/dt
-
-    return [x1, y1]
+Lokta_Volterra = [
+    lambda t, x, y: x * (1 - x) - (alpha * x * y) / (delta + x), # dx/dt
+    lambda t, x, y: beta * y * (1 - (y/x)), # dy/dt
+]
 
 class ODETests(unittest.TestCase):
     def test_1d(self):
@@ -120,6 +106,9 @@ class numericalShootingTests(unittest.TestCase):
     def test_lokta_volterra(self):
         """Check valid solution is found for lokta volterra equation
         """
+        x, y, period = shoot(Lokta_Volterra, [0.25, 0.25])
+        # TODO: [0.10105101,  0.1807346 , 21.08366319] is hardcoded in, better way of testing if shoot has worked?
+        self.assertTrue(np.allclose([x, y, period], [0.10105101,  0.1807346 , 21.08366319]))
         pass
 
     def test_low_tmax(self):
