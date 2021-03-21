@@ -97,7 +97,6 @@ class ODETests(unittest.TestCase):
 
         t = np.linspace(0, 10, 10)
 
-        # FIXME: This test fails
         self.assertRaises(ArithmeticError, solve_ode, eq, initial, t, 0.1, "rk4")
         pass
 
