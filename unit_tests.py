@@ -52,7 +52,35 @@ class ODETests(unittest.TestCase):
     def test_3d(self):
         pass
 
-    def test_incorrect_dimensions(self):
+    def test_fewer_initials(self):
+        """Check ValueError is raised when too few initial conditions are passed
+        """
+        eq = [
+            lambda t, x, y: y, # x
+            lambda t, x, y: -x, # y
+        ]
+
+        initial = 2
+
+        t = np.linspace(0, 10, 10)
+
+        # FIXME: This test fails
+        self.assertRaises(ValueError, solve_ode, eq, initial, t, 0.1, "rk4")
+        pass
+    
+    def test_fewer_equations(self):
+        """Check ValueError is raised when too few equations are passed
+        """
+        eq = [
+            lambda t, x, y: y, # x
+        ]
+
+        initial = [2, 1]
+
+        t = np.linspace(0, 10, 10)
+
+        # FIXME: This test fails
+        self.assertRaises(ValueError, solve_ode, eq, initial, t, 0.1, "rk4")
         pass
 
     def test_no_solution(self):
