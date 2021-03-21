@@ -1,5 +1,4 @@
 import numpy as np
-import matplotlib.pyplot as plt
 
 def find_repeats(arr, abs_tol=0.01, period_tol=None, show_errors=False):
     rounded = arr
