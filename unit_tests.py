@@ -119,7 +119,14 @@ class rootFindingTests(unittest.TestCase):
         self.assertTrue(np.allclose(y(root), 0))
         pass
         
+    def test_undefined_arithmetic(self):
+        """Check ArithmeticError is raised when equations have arithmetic error (e.g. divide-by-zero)
+        """
+        y = lambda x: 1/x # dy/dt
 
+        # FIXME: This test fails
+        self.assertRaises(ArithmeticError, find_root, y, 0)
+        pass
 
 class numericalShootingTests(unittest.TestCase):
     def test_lokta_volterra(self):
