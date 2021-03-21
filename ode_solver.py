@@ -121,6 +121,12 @@ def solve_ode(funcs, x0, t, hmax, method="euler"):
 	if type(funcs) != list:
 		funcs = [funcs]
 
+	if len(funcs) != len(x):
+		if len(funcs) > len(x):
+			raise ValueError(f"Too many ODEs ({len(funcs)}) for initial conditions ({len(x)})")	
+		else:
+			raise ValueError(f"Too few ODEs ({len(funcs)}) for initial conditions ({len(x)})")
+
 	x_out[0, :] = x
 	# Solve between values t_end and t_start
 	for row, t_end in enumerate(t[1:], start=1):
