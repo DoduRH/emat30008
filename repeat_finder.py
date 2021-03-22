@@ -13,6 +13,8 @@ def find_repeats(arr):
     Returns:
         tuple: tuple of (0, 0, ..., -1) if search fails or (x, y, ..., period)
     """
+    # TODO: Clean inputs prior to use
+
     # Reshape arr to be n by x array of numbers
     arr = np.reshape(arr, (len(arr), -1))
 
@@ -59,6 +61,8 @@ def find_period(func, t0=1, tstep=10, tmax=np.inf):
     Returns:
         tuple: tuple of (0, 0, ..., -1) if search fails or (x, y, ..., period)
     """
+    # TODO: Clean inputs prior to use
+
     t = np.arange(0, t0, 0.1)
     # TODO: Cache solution and append new variables to increase performance?
     # Would require func to take t and x0

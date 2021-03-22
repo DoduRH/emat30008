@@ -1,5 +1,4 @@
 from repeat_finder import TimePeriodNotFoundError, find_period
-from numpy.core.fromnumeric import repeat
 from root_finder import find_root
 import unittest
 import numpy as np
