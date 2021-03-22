@@ -64,6 +64,8 @@ def find_root(f, u):
     while not np.allclose(u, u_old):
         u_old = u
         u = newton_step(f, u)
+        if not np.isfinite(u).all():
+            raise ArithmeticError
     return u
 
 def main():
