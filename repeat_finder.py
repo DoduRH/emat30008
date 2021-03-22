@@ -29,7 +29,7 @@ def find_repeats(arr):
     last = np.nan
     for i, row in enumerate(arr):
         # BUG: Potentially fails if the bottom of one wave is missed (e.g. 1, 2, and 4 are close)
-        if np.allclose(row[0], output[0], 1e-2):
+        if np.allclose(row, output, 1e-2):
             # If last added was not within the last 5 itterations append it
             if last < i - 5:
                 occurences.append(i)
@@ -47,7 +47,7 @@ def find_repeats(arr):
     return (*output, period)
 
 
-def find_period(func, t0=1, tstep=1, tmax=np.inf):
+def find_period(func, t0=1, tstep=10, tmax=np.inf):
     """Find estimate for period and initial conditions of func
 
     Args:
@@ -60,6 +60,8 @@ def find_period(func, t0=1, tstep=1, tmax=np.inf):
         tuple: tuple of (0, 0, ..., -1) if search fails or (x, y, ..., period)
     """
     t = np.arange(0, t0, 0.1)
+    # TODO: Cache solution and append new variables to increase performance?
+    # Would require func to take t and x0
     *initials, period = find_repeats(func(t))
 
     while period == -1 and t0 < tmax:
@@ -67,6 +69,8 @@ def find_period(func, t0=1, tstep=1, tmax=np.inf):
         t = np.arange(0, t0, 0.1)
         *initials, period = find_repeats(func(t))
 
+    # Convert period from index to seconds
+    period = period * 0.1
     return (*initials, period)
 
 

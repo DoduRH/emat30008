@@ -1,10 +1,10 @@
 # %%
 import numpy as np
 from ode_solver import solve_ode
-from repeat_finder import find_repeats
+from repeat_finder import TimePeriodNotFoundError, find_period
 from scipy.optimize import fsolve
 
-def shoot(f, initial, tmax=200):
+def shoot(f, initial, tmax=np.inf):
     """Use numerical shooting to calculate the initial conditions and period for f
 
     Args:
@@ -17,9 +17,10 @@ def shoot(f, initial, tmax=200):
     """
 
     # Find approximate location of periodic behaviour
-    # TODO: Steadily increment tmax until full period is found?
-    rk4_solution = solve_ode(f, initial, np.linspace(0, tmax, 500), 0.1, "rk4")
-    initial_conditions, period = find_repeats(rk4_solution, abs_tol=0.08)
+    approx_period = find_period(lambda t: solve_ode(f, initial, t, 0.1, "rk4"), tmax=tmax)
+
+    if approx_period[-1] == -1:
+        raise TimePeriodNotFoundError
 
     # Setup g
     g = lambda U: [
@@ -29,7 +30,7 @@ def shoot(f, initial, tmax=200):
 
     # Find roots of g
     # TODO: Option to use custom root finder
-    orbit = fsolve(g, [*initial_conditions, period])
+    orbit = fsolve(g, approx_period)
 
     # Make sure only singular orbit was found by dividing the period 
     # period until it no longer gives g(orbit) approx= 0
