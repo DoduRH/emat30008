@@ -45,6 +45,20 @@ def find_repeats(arr):
 
 
 def find_period(func, x0, t0=1, hmax=0.1, tstep=1, tmax=np.inf, ode_method="rk4"):
+    """Find estimate for period and initial conditions of func
+
+    Args:
+        func (function): Function to find period of
+        x0 (list): Initial conditions
+        t0 (int, optional): Starting value for T, must be positive. Defaults to 1.
+        hmax (float, optional): Hmax when integrating. Defaults to 0.1.
+        tstep (float, optional): Steps of t0 to take. Defaults to 1.
+        tmax (float, optional): Max value for T. Defaults to np.inf.
+        ode_method (str, optional): ODE solving method. Defaults to "rk4".
+
+    Returns:
+        tuple: tuple of (0, 0, ..., -1) if search fails or (x, y, ..., period)
+    """
     period = -1
     initials = (0,) * len(x0)
     while period == -1 and t0 < tmax:
