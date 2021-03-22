@@ -1,4 +1,4 @@
-from repeat_finder import TimePeriodNotFoundError
+from repeat_finder import TimePeriodNotFoundError, find_period
 from numpy.core.fromnumeric import repeat
 from root_finder import find_root
 import unittest
@@ -100,6 +100,25 @@ class ODETests(unittest.TestCase):
         t = np.linspace(0, 10, 10)
 
         self.assertRaises(ArithmeticError, solve_ode, eq, initial, t, 0.1, "rk4")
+        pass
+
+
+class repeatFinderTests(unittest.TestCase):    
+    def test_lokta_volterra(self):
+        """Test period finding for Lokta Volterra equations
+        """
+        alpha = 1
+        delta = 0.1
+        beta = 0.2
+
+        Lokta_Volterra = [
+            lambda t, x, y: x * (1 - x) - (alpha * x * y) / (delta + x), # dx/dt
+            lambda t, x, y: beta * y * (1 - (y/x)), # dy/dt
+        ]
+
+        *initials, period = find_period(lambda t: solve_ode(Lokta_Volterra, [0.25, 0.25], t, 0.1, "rk4"))
+
+        self.assertTrue(initials, solve_ode(Lokta_Volterra, initials, [0, period], 0.1, "rk4"))
         pass
 
 
