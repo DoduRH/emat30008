@@ -47,28 +47,25 @@ def find_repeats(arr):
     return (*output, period)
 
 
-def find_period(func, x0, t0=1, hmax=0.1, tstep=1, tmax=np.inf, ode_method="rk4"):
+def find_period(func, t0=1, tstep=1, tmax=np.inf):
     """Find estimate for period and initial conditions of func
 
     Args:
-        func (function): Function to find period of
-        x0 (list): Initial conditions
+        func (function): Function to find period of.  Must take a single argument of t as an array
         t0 (int, optional): Starting value for T, must be positive. Defaults to 1.
-        hmax (float, optional): Hmax when integrating. Defaults to 0.1.
         tstep (float, optional): Steps of t0 to take. Defaults to 1.
         tmax (float, optional): Max value for T. Defaults to np.inf.
-        ode_method (str, optional): ODE solving method. Defaults to "rk4".
 
     Returns:
         tuple: tuple of (0, 0, ..., -1) if search fails or (x, y, ..., period)
     """
-    period = -1
-    initials = (0,) * len(x0)
+    t = np.arange(0, t0, 0.1)
+    *initials, period = find_repeats(func(t))
+
     while period == -1 and t0 < tmax:
         t0 += tstep
         t = np.arange(0, t0, 0.1)
-        solution = solve_ode(func, x0, t, hmax, ode_method)
-        *initials, period = find_repeats(solution)
+        *initials, period = find_repeats(func(t))
 
     return (*initials, period)
 
@@ -83,4 +80,4 @@ if __name__ == "__main__":
         lambda t, x, y: beta * y * (1 - (y/x)), # dy/dt
     ]
 
-    print(find_period(Lokta_Volterra, [0.25, 0.25]))
+    print(find_period(lambda t: solve_ode(Lokta_Volterra, [0.25, 0.25], t, 0.1, "rk4")))
