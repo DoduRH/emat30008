@@ -121,6 +121,23 @@ class repeatFinderTests(unittest.TestCase):
         self.assertTrue(initials, solve_ode(Lokta_Volterra, initials, [0, period], 0.1, "rk4"))
         pass
 
+    def test_low_tmax(self):
+        """Test period finding for Lokta Volterra equations when low tmax is specified
+        """
+        alpha = 1
+        delta = 0.1
+        beta = 0.2
+
+        Lokta_Volterra = [
+            lambda t, x, y: x * (1 - x) - (alpha * x * y) / (delta + x), # dx/dt
+            lambda t, x, y: beta * y * (1 - (y/x)), # dy/dt
+        ]
+
+        *initials, period = find_period(lambda t: solve_ode(Lokta_Volterra, [0.25, 0.25], t, 0.1, "rk4"))
+
+        self.assertRaises(TimePeriodNotFoundError, find_period, lambda t: solve_ode(Lokta_Volterra, initials, [0, period], 0.1, "rk4"), tmax=50)
+        pass
+
 
 class rootFindingTests(unittest.TestCase):
     def test_linear(self):
