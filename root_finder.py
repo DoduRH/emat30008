@@ -14,17 +14,18 @@ def jacobian_matrix(f, x, eps=1e-10):
     """
     J = np.zeros([len(x), len(x)], dtype=np.float64)
 
-    for i, _ in enumerate(x):
-        x1 = x.copy()
-        x2 = x.copy()
+    with np.errstate(divide='ignore', invalid='ignore'):
+        for i, _ in enumerate(x):
+            x1 = x.copy()
+            x2 = x.copy()
 
-        x1[i] += eps
-        x2[i] -= eps
+            x1[i] += eps
+            x2[i] -= eps
 
-        f1 = np.array(f(x1))
-        f2 = np.array(f(x2))
+            f1 = np.array(f(x1))
+            f2 = np.array(f(x2))
 
-        J[:,i] = (f1 - f2) / (2 * eps)
+            J[:,i] = (f1 - f2) / (2 * eps)
 
     return J
 
@@ -41,8 +42,9 @@ def newton_step(f, u):
     jacobian = jacobian_matrix(f, u)
     # Ensure jacobian is not singular and calculate the inverse
     inverse = np.linalg.inv(jacobian)
-
-    return u - np.matmul(inverse, f(u))
+    
+    with np.errstate(divide='ignore', invalid='ignore'):
+        return u - np.matmul(inverse, f(u))
 
 def find_root(f, u):
     """Calculates x where f(x) = 0
