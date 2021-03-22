@@ -13,6 +13,9 @@ def find_repeats(arr):
     Returns:
         tuple: tuple of (0, 0, ..., -1) if search fails or (x, y, ..., period)
     """
+    # Reshape arr to be n by x array of numbers
+    arr = np.reshape(arr, (len(arr), -1))
+
     rounded = np.around(arr[:,0], 3)
 
     unique = np.array(np.unique(rounded, axis=0, return_counts=True, return_index=True)).T
