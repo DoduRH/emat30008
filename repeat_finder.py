@@ -1,43 +1,69 @@
+from ode_solver import solve_ode
 import numpy as np
 
 class TimePeriodNotFoundError(Exception):
     pass
 
-def find_repeats(arr, abs_tol=0.01, period_tol=None, show_errors=False):
-    rounded = arr
+def find_repeats(arr):
+    """Gets estimate for repeated values in arr
 
-    if period_tol is None:
-        period_tol = abs_tol * 5
-    # Loop through each pair in the array
-    for i, a in enumerate(rounded):
-        period_start = i
-        while i < rounded.shape[0] and np.allclose(rounded[i], a, atol=abs_tol):
-            i += 1
-        for b in rounded[i:]:
-            i += 1
-            if np.allclose(a, b, atol=abs_tol):
-                # Check period of oscillation works for the remaining periods
-                period = i - period_start
-                period_works = True
-                # If only 1 period is found, raise TimePeriodNotFoundError
-                if rounded[period_start::period].shape[0] <= 2:
-                    raise TimePeriodNotFoundError("Time period not found")
-                for x in rounded[period_start::period]:
-                    if not np.allclose(x, a, atol=period_tol):
-                        period_works = False
-                        break
-                if period_works:
-                    return (a, period)
-    
-    if show_errors:
-        print("No solution found")
+    Args:
+        arr (ndarray): Array of data to search through
 
-    return np.array([0, 0])
+    Returns:
+        tuple: tuple of (0, 0, ..., -1) if search fails or (x, y, ..., period)
+    """
+    rounded = np.around(arr[:,0], 3)
+
+    unique = np.array(np.unique(rounded, axis=0, return_counts=True, return_index=True)).T
+
+    # Ignore y vals and count
+    _, index, _ = unique[unique[:,2].argsort()][-1]
+
+    output = arr[int(index)]
+
+    occurences = []
+    last = np.nan
+    for i, row in enumerate(arr):
+        # BUG: Potentially fails if the bottom of one wave is missed (e.g. 1, 2, and 4 are close)
+        if np.allclose(row[0], output[0], 1e-2):
+            # If last added was not within the last 5 itterations append it
+            if last < i - 5:
+                occurences.append(i)
+            last = i
+
+    occ_array = np.array(occurences)
+
+    if len(occurences) < 3:
+        return (*(0,)*len(output), -1)
+
+    dif = occ_array[1:] - occ_array[:-1]
+
+    period = np.mean(dif)
+
+    return (*output, period)
+
+
+def find_period(func, x0, t0=1, hmax=0.1, tstep=1, tmax=np.inf, ode_method="rk4"):
+    period = -1
+    initials = (0,) * len(x0)
+    while period == -1 and t0 < tmax:
+        t0 += tstep
+        t = np.arange(0, t0, 0.1)
+        solution = solve_ode(func, x0, t, hmax, ode_method)
+        *initials, period = find_repeats(solution)
+
+    return (*initials, period)
+
 
 if __name__ == "__main__":
-    t = np.linspace(0, 20, 100)
-    a = np.sin(t)
-    b = np.cos(t)
-    arr = np.array([a,b]).transpose()
+    alpha = 1
+    delta = 0.1
+    beta = 0.2
 
-    print(find_repeats(arr))
+    Lokta_Volterra = [
+        lambda t, x, y: x * (1 - x) - (alpha * x * y) / (delta + x), # dx/dt
+        lambda t, x, y: beta * y * (1 - (y/x)), # dy/dt
+    ]
+
+    print(find_period(Lokta_Volterra, [0.25, 0.25]))
