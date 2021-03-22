@@ -73,12 +73,13 @@ def solve_to(step_func, f, x0, t0, t1, hmax):
 	"""
 	t = t0
 	x = x0
-	while t + hmax < t1:
-		x_old = x
-		x = step_func(f, x, t, hmax)
-		if not np.isfinite(x).all():
-			raise ArithmeticError(f"Error with arguments {x_old} cannot continue ODE")
-		t += hmax
+	with np.errstate(divide='ignore', invalid='ignore'):
+		while t + hmax < t1:
+			x_old = x
+			x = step_func(f, x, t, hmax)
+			if not np.isfinite(x).all():
+				raise ArithmeticError(f"Error with arguments {x_old} cannot continue ODE")
+			t += hmax
 
 	# Do final step to t1
 	x = step_func(f, x, t, t1 - t)
