@@ -69,6 +69,10 @@ def find_period(func, t0=1, tstep=10, tmax=np.inf):
         t = np.arange(0, t0, 0.1)
         *initials, period = find_repeats(func(t))
 
+    # If no period was found, raise error
+    if period == -1:
+        raise TimePeriodNotFoundError
+
     # Convert period from index to seconds
     period = period * 0.1
     return (*initials, period)
