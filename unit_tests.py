@@ -1,5 +1,4 @@
-from repeat_finder import TimePeriodNotFoundError
-from numpy.core.fromnumeric import repeat
+from repeat_finder import TimePeriodNotFoundError, find_period
 from root_finder import find_root
 import unittest
 import numpy as np
@@ -103,6 +102,42 @@ class ODETests(unittest.TestCase):
         pass
 
 
+class repeatFinderTests(unittest.TestCase):    
+    def test_lokta_volterra(self):
+        """Test period finding for Lokta Volterra equations
+        """
+        alpha = 1
+        delta = 0.1
+        beta = 0.2
+
+        Lokta_Volterra = [
+            lambda t, x, y: x * (1 - x) - (alpha * x * y) / (delta + x), # dx/dt
+            lambda t, x, y: beta * y * (1 - (y/x)), # dy/dt
+        ]
+
+        *initials, period = find_period(lambda t: solve_ode(Lokta_Volterra, [0.25, 0.25], t, 0.1, "rk4"))
+
+        self.assertTrue(initials, solve_ode(Lokta_Volterra, initials, [0, period], 0.1, "rk4"))
+        pass
+
+    def test_low_tmax(self):
+        """Test period finding for Lokta Volterra equations when low tmax is specified
+        """
+        alpha = 1
+        delta = 0.1
+        beta = 0.2
+
+        Lokta_Volterra = [
+            lambda t, x, y: x * (1 - x) - (alpha * x * y) / (delta + x), # dx/dt
+            lambda t, x, y: beta * y * (1 - (y/x)), # dy/dt
+        ]
+
+        *initials, period = find_period(lambda t: solve_ode(Lokta_Volterra, [0.25, 0.25], t, 0.1, "rk4"))
+
+        self.assertRaises(TimePeriodNotFoundError, find_period, lambda t: solve_ode(Lokta_Volterra, initials, [0, period], 0.1, "rk4"), tmax=50)
+        pass
+
+
 class rootFindingTests(unittest.TestCase):
     def test_linear(self):
         """Check root finding for linear equation
@@ -132,8 +167,8 @@ class numericalShootingTests(unittest.TestCase):
         """Check valid solution is found for lokta volterra equation
         """
         x, y, period = shoot(Lokta_Volterra, [0.25, 0.25])
-        # TODO: [0.10105101,  0.1807346 , 21.08366319] is hardcoded in, better way of testing if shoot has worked?
-        self.assertTrue(np.allclose([x, y, period], [0.10105101,  0.1807346 , 21.08366319]))
+        # XXX: Add a check for a single period?
+        self.assertTrue(np.allclose([x, y], solve_ode(Lokta_Volterra, [x, y], [0, period], hmax=0.1, method="rk4")[-1]))
         pass
 
     def test_low_tmax(self):
