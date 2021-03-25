@@ -49,6 +49,7 @@ def find_repeats(arr):
     return (*output, period)
 
 
+# TODO: Add optional time peiod guess
 def find_period(func, t0=1, tstep=10, tmax=np.inf):
     """Find estimate for period and initial conditions of func
 

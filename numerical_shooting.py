@@ -22,6 +22,7 @@ def shoot(f, initial, tmax=np.inf):
     if approx_period[-1] == -1:
         raise TimePeriodNotFoundError
 
+    # NOTE: Is f[0](U[-1], *U[:-1]) a general phase condition?
     # Setup g
     g = lambda U: [
         *(U[:-1] - solve_ode(f, U[:-1], [0, U[-1]], 0.1, "RK4")[-1]),

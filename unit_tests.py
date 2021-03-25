@@ -158,7 +158,7 @@ class rootFindingTests(unittest.TestCase):
         """
         y = lambda x: 1/x # dy/dt
 
-        # XXX: Should this raise a more specific error than ArithmeticError
+        # NOTE: Should this raise a more specific error than ArithmeticError
         self.assertRaises(ArithmeticError, find_root, y, 0)
         pass
 
@@ -167,7 +167,7 @@ class numericalShootingTests(unittest.TestCase):
         """Check valid solution is found for lokta volterra equation
         """
         x, y, period = shoot(Lokta_Volterra, [0.25, 0.25])
-        # XXX: Add a check for a single period?
+        # NOTE: Add a check for a single period?
         self.assertTrue(np.allclose([x, y], solve_ode(Lokta_Volterra, [x, y], [0, period], hmax=0.1, method="rk4")[-1]))
         pass
 
