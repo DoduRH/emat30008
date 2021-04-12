@@ -117,7 +117,7 @@ class repeatFinderTests(unittest.TestCase):
 
         *initials, period = find_period(lambda t: solve_ode(Lokta_Volterra, [0.25, 0.25], t, 0.1, "rk4"))
 
-        self.assertTrue(initials, solve_ode(Lokta_Volterra, initials, [0, period], 0.1, "rk4"))
+        self.assertTrue(np.allclose(initials, solve_ode(Lokta_Volterra, initials, [0, period], 0.1, "rk4")[-1], rtol=0.05))
         pass
 
     def test_low_tmax(self):
