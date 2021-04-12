@@ -177,9 +177,23 @@ class numericalShootingTests(unittest.TestCase):
         self.assertRaises(TimePeriodNotFoundError, shoot, Lokta_Volterra, [0.25, 0.25], 20)
         pass
     
-    def test_incorrect_dimensions(self):
-        """Check ValueError is raised when the function and initial conditions have different dimensions
+    def test_hopf_bifurcation(self):
+        """Check valid solution is found for Hopf bifurcation equation
         """
+        
+        beta = 0.5
+        sigma = -1
+
+        hopf = [
+            lambda t, u1, u2: beta * u1 -        u2 + sigma * u1 * (u1**2 + u2**2),
+            lambda t, u1, u2:        u1 + beta * u2 + sigma * u2 * (u1**2 + u2**2),
+        ]
+
+        x, y, period = shoot(hopf, [2, 4])
+
+        # Ensure solution after 1 period is within 5% of the starting value
+        self.assertTrue(np.allclose([x, y], solve_ode(hopf, [x, y], [0, period], hmax=0.1, method="rk4")[-1], rtol=0.05))
+
         pass
 
 if __name__ == "__main__":

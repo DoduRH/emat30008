@@ -31,7 +31,8 @@ def find_repeats(arr):
     last = np.nan
     for i, row in enumerate(arr):
         # BUG: Potentially fails if the bottom of one wave is missed (e.g. 1, 2, and 4 are close)
-        if np.allclose(row, output, 1e-2):
+        # TODO: Allclose tolerance as argument
+        if np.allclose(row, output, 1e-1):
             # If last added was not within the last 5 itterations append it
             if last < i - 5:
                 occurences.append(i)
