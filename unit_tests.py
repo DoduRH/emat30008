@@ -106,14 +106,6 @@ class repeatFinderTests(unittest.TestCase):
     def test_lokta_volterra(self):
         """Test period finding for Lokta Volterra equations
         """
-        alpha = 1
-        delta = 0.1
-        beta = 0.2
-
-        Lokta_Volterra = [
-            lambda t, x, y: x * (1 - x) - (alpha * x * y) / (delta + x), # dx/dt
-            lambda t, x, y: beta * y * (1 - (y/x)), # dy/dt
-        ]
 
         *initials, period = find_period(lambda t: solve_ode(Lokta_Volterra, [0.25, 0.25], t, 0.1, "rk4"))
 
