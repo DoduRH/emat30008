@@ -1,13 +1,13 @@
 import numpy as np
 
 
-def jacobian_matrix(f, x, eps=1e-10):
+def jacobian_matrix(f, x, eps=1e-3):
     """Numerically approximate jacobian matrix for f
 
     Args:
         f (function): (Multivariate) function
         x (list): Points to calculate jacobian
-        eps (float, optional): Range of f to use for calculating jacobian. Defaults to 1e-10.
+        eps (float, optional): Range of f to use for calculating jacobian. Defaults to 1e-3.
 
     Returns:
         np.ndarray: Jacobian matrix approximation for f at x
@@ -66,9 +66,30 @@ def find_root(f, u):
         u = newton_step(f, u)
         if not np.isfinite(u).all():
             raise ArithmeticError
+    assert np.allclose(f(u), 0), "Failed to converge"
+    
     return u
 
 def main():
+    beta = 0.5
+    sigma = -1
+
+    f = [
+        lambda t, u1, u2: beta * u1 -        u2 + sigma * u1 * (u1**2 + u2**2),
+        lambda t, u1, u2:        u1 + beta * u2 + sigma * u2 * (u1**2 + u2**2),
+    ]
+
+    g = lambda U: [
+        *(U[:-1] - solve_ode(f, U[:-1], [0, U[-1]], 0.1, "RK4")[-1]),
+        f[0](U[-1], *U[:-1]), # dx/dt(0) = 0
+    ]
+
+    approx_period = np.array([1, 0, 7])
+
+    # Find roots of g
+    orbit = find_root(g, approx_period)
+    print(orbit)
+    
     # Scalar root find test
     print(f"{find_root(lambda x: x ** 2 - 2 * x - 3, 4)=}")
 

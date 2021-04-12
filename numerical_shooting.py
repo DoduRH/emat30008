@@ -2,9 +2,9 @@
 import numpy as np
 from ode_solver import solve_ode
 from repeat_finder import TimePeriodNotFoundError, find_period
-from scipy.optimize import fsolve
+from root_finder import find_root
 
-def shoot(f, initial, tmax=np.inf):
+def shoot(f, initial, tmax=np.inf, solver=find_root):
     """Use numerical shooting to calculate the initial conditions and period for f
 
     Args:
@@ -30,8 +30,7 @@ def shoot(f, initial, tmax=np.inf):
     ]
 
     # Find roots of g
-    # TODO: Option to use custom root finder
-    orbit = fsolve(g, approx_period)
+    orbit = solver(g, approx_period)
 
     # Make sure only singular orbit was found by dividing the period 
     # period until it no longer gives g(orbit) approx= 0
@@ -47,9 +46,8 @@ def shoot(f, initial, tmax=np.inf):
         x0 = orbit[:-1] # Reset x0
         divisor += 1
         
-    # Run fsolve once more to re-align to a single orbit
-    # TODO: Option to use custom root finder
-    orbit = fsolve(g, orbit)
+    # Run solver once more to re-align to a single orbit
+    orbit = solver(g, orbit)
 
     return orbit
 # %%
