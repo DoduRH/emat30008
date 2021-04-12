@@ -14,9 +14,9 @@ def euler_step(funcs, initial_values, t0, h):
 	"""
 
 	# Do step for each function
-	x1 = np.array([])
-	for x0, func in zip(initial_values, funcs):
-		x1 = np.append(x1, x0 + func(t0, *initial_values)*h)
+	x1 = np.empty(len(funcs))
+	for i, (x0, func) in enumerate(zip(initial_values, funcs)):
+		x1[i] = x0 + func(t0, *initial_values)*h
 
 	return x1
 
@@ -34,26 +34,26 @@ def RK4_step(funcs, initial_values, t0, h):
 	"""
 	
 	# Calculate k 1-4 for each function
-	k1 = np.array([])
-	for func in funcs:
-		k1 = np.append(k1, h * func(t0, *initial_values))
+	k1 = np.empty(len(funcs))
+	for i, func in enumerate(funcs):
+		k1[i] = h * func(t0, *initial_values)
 
-	k2 = np.array([])
-	for func, k in zip(funcs, k1):
-		k2 = np.append(k2, h * func(t0 + h/2, *(initial_values + k/2)))
+	k2 = np.empty(len(funcs))
+	for i, (func, k) in enumerate(zip(funcs, k1)):
+		k2[i] = h * func(t0 + h/2, *(initial_values + k/2))
 	
-	k3 = np.array([])
-	for func, k in zip(funcs, k2):
-		k3 = np.append(k3, h * func(t0 + h/2, *(initial_values + k/2)))
+	k3 = np.empty(len(funcs))
+	for i, (func, k) in enumerate(zip(funcs, k2)):
+		k3[i] = h * func(t0 + h/2, *(initial_values + k/2))
 	
-	k4 = np.array([])
-	for func, k in zip(funcs, k3):
-		k4 = np.append(k4, h * func(t0 + h, *(initial_values + k)))
+	k4 = np.empty(len(funcs))
+	for i, (func, k) in enumerate(zip(funcs, k3)):
+		k4[i] = h * func(t0 + h, *(initial_values + k))
 
 	# Calulate next x's
-	x1 = np.array([])
-	for x0, m1, m2, m3, m4 in zip(initial_values, k1, k2, k3, k4):
-		x1 = np.append(x1, x0 + (m1 + 2*m2 + 2*m3 + m4)/6)
+	x1 = np.empty(len(funcs))
+	for i, (x0, m1, m2, m3, m4) in enumerate(zip(initial_values, k1, k2, k3, k4)):
+		x1[i] = x0 + (m1 + 2*m2 + 2*m3 + m4)/6
 
 	return x1
 
