@@ -30,7 +30,6 @@ def find_repeats(arr):
     occurences = []
     last = np.nan
     for i, row in enumerate(arr):
-        # BUG: Potentially fails if the bottom of one wave is missed (e.g. 1, 2, and 4 are close)
         # TODO: Allclose tolerances as arguments
         if np.allclose(row, output, rtol=0.05, atol=0.01):
             # If last added was not within the last 5 itterations append it
@@ -50,7 +49,6 @@ def find_repeats(arr):
     return (*output, period)
 
 
-# TODO: Add optional time peiod guess
 def find_period(func, t0=1, tstep=10, tmax=np.inf):
     """Find estimate for period and initial conditions of func
 
