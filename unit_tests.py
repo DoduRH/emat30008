@@ -4,15 +4,13 @@ import unittest
 import numpy as np
 from ode_solver import solve_ode
 from numerical_shooting import shoot
+from scipy.optimize import fsolve # TODO: Remove this and only use find_root
 
-alpha = 1
-delta = 0.1
-beta = 0.2
+def Lokta_Volterra(t, U, p):
+    x = U[0] * (1 - U[0]) - (p['alpha'] * U[0] * U[1]) / (p['delta'] + U[0]) # dx/dt
+    y = p['beta'] * U[1] * (1 - (U[1]/U[0])) # dy/dt
 
-Lokta_Volterra = [
-    lambda t, x, y: x * (1 - x) - (alpha * x * y) / (delta + x), # dx/dt
-    lambda t, x, y: beta * y * (1 - (y/x)), # dy/dt
-]
+    return [x, y]
 
 class ODETests(unittest.TestCase):
     def test_1d(self):
@@ -30,9 +28,9 @@ class ODETests(unittest.TestCase):
     def test_2d(self):
         """Test system of 2 ODEs agains analytic solution
         """
-        eq = [
-            lambda t, x, y: y, # x
-            lambda t, x, y: -x, # y
+        eq = lambda t, U: [
+            U[1], # x
+            -U[0], # y
         ]
 
         initial = [2, 1]
@@ -55,48 +53,26 @@ class ODETests(unittest.TestCase):
     def test_3d(self):
         """Test system of 3 ODEs agains analytic solution
         """
-        pass
-
-    def test_fewer_initials(self):
-        """Check ValueError is raised when too few initial conditions are passed
-        """
-        eq = [
-            lambda t, x, y: y, # x
-            lambda t, x, y: -x, # y
-        ]
-
-        initial = 2
-
-        t = np.linspace(0, 10, 10)
-
-        self.assertRaises(ValueError, solve_ode, eq, initial, t, 0.1, "rk4")
-        pass
-    
-    def test_fewer_equations(self):
-        """Check ValueError is raised when too few equations are passed
-        """
-        eq = [
-            lambda t, x, y: y, # x
-        ]
-
-        initial = [2, 1]
-
-        t = np.linspace(0, 10, 10)
-
-        self.assertRaises(ValueError, solve_ode, eq, initial, t, 0.1, "rk4")
+        # TODO: Add test
         pass
 
     def test_undefined_arithmetic(self):
         """Check ArithmeticError is raised when equations have arithmetic error (e.g. divide-by-zero)
         """
-        eq = [
-            lambda t, x, y: y, # dx/dt
-            lambda t, x, y: -x/ (2*x-y), # dy/dt
+        eq = lambda t, U: [
+            U[1], # dx/dt
+            -U[0]/ (2*U[0]-U[1]), # dy/dt
         ]
 
         initial = [1, 2]
 
         t = np.linspace(0, 10, 10)
+
+        p = dict(
+            alpha = 1,
+            delta = 0.1,
+            beta = 0.2,
+        )
 
         self.assertRaises(ArithmeticError, solve_ode, eq, initial, t, 0.1, "rk4")
         pass
@@ -106,27 +82,29 @@ class repeatFinderTests(unittest.TestCase):
     def test_lokta_volterra(self):
         """Test period finding for Lokta Volterra equations
         """
+        p = dict(
+            alpha = 1,
+            delta = 0.1,
+            beta = 0.2,
+        )
 
-        *initials, period = find_period(lambda t: solve_ode(Lokta_Volterra, [0.25, 0.25], t, 0.1, "rk4"))
+        *initials, period = find_period(lambda t: solve_ode(Lokta_Volterra, [0.25, 0.25], t, 0.1, "rk4", [p]))
 
-        self.assertTrue(np.allclose(initials, solve_ode(Lokta_Volterra, initials, [0, period], 0.1, "rk4")[-1], rtol=0.05))
+        self.assertTrue(np.allclose(initials, solve_ode(Lokta_Volterra, initials, [0, period], 0.1, "rk4", [p])[-1], rtol=0.05))
         pass
 
     def test_low_tmax(self):
         """Test period finding for Lokta Volterra equations when low tmax is specified
         """
-        alpha = 1
-        delta = 0.1
-        beta = 0.2
+        params = dict(
+            alpha = 1,
+            delta = 0.1,
+            beta = 0.2,
+        )
 
-        Lokta_Volterra = [
-            lambda t, x, y: x * (1 - x) - (alpha * x * y) / (delta + x), # dx/dt
-            lambda t, x, y: beta * y * (1 - (y/x)), # dy/dt
-        ]
+        #*initials, period = find_period(lambda t: solve_ode(Lokta_Volterra, [0.25, 0.25], t, 0.1, "rk4"))
 
-        *initials, period = find_period(lambda t: solve_ode(Lokta_Volterra, [0.25, 0.25], t, 0.1, "rk4"))
-
-        self.assertRaises(TimePeriodNotFoundError, find_period, lambda t: solve_ode(Lokta_Volterra, initials, [0, period], 0.1, "rk4"), tmax=50)
+        self.assertRaises(TimePeriodNotFoundError, find_period, lambda t: solve_ode(Lokta_Volterra, [0.25, 0.25], t, 0.1, "rk4", [params]), tmax=50)
         pass
 
 
@@ -158,33 +136,47 @@ class numericalShootingTests(unittest.TestCase):
     def test_lokta_volterra(self):
         """Check valid solution is found for lokta volterra equation
         """
-        x, y, period = shoot(Lokta_Volterra, [0.25, 0.25])
+        params = dict(
+            alpha = 1,
+            delta = 0.1,
+            beta = 0.2,
+        )
+
+        x, y, period = shoot(Lokta_Volterra, [0.25, 0.25], ODEparams=[params])
         # NOTE: Add a check for a single period?
-        self.assertTrue(np.allclose([x, y], solve_ode(Lokta_Volterra, [x, y], [0, period], hmax=0.1, method="rk4")[-1]))
+        self.assertTrue(np.allclose([x, y], solve_ode(Lokta_Volterra, [x, y], [0, period], hmax=0.1, method="rk4", ODEparams=[params])[-1]))
         pass
 
     def test_low_tmax(self):
         """Check suitable error is raised when no period is found
         """
-        self.assertRaises(TimePeriodNotFoundError, shoot, Lokta_Volterra, [0.25, 0.25], 20)
+        params = dict(
+            alpha = 1,
+            delta = 0.1,
+            beta = 0.2,
+        )
+
+        self.assertRaises(TimePeriodNotFoundError, shoot, Lokta_Volterra, [0.25, 0.25], 20, ODEparams=[params])
         pass
     
     def test_hopf_bifurcation(self):
         """Check valid solution is found for Hopf bifurcation equation
         """
         
-        beta = 0.5
-        sigma = -1
+        params = dict(
+            beta = 0.5,
+            sigma = -1,
+        )
 
-        hopf = [
-            lambda t, u1, u2: beta * u1 -        u2 + sigma * u1 * (u1**2 + u2**2),
-            lambda t, u1, u2:        u1 + beta * u2 + sigma * u2 * (u1**2 + u2**2),
+        hopf = lambda t, U, p: [
+            p['beta'] * U[0] -        U[1] + p['sigma'] * U[0] * (U[0]**2 + U[1]**2),
+            U[1] + p['beta'] * U[1] + p['sigma'] * U[1] * (U[0]**2 + U[1]**2),
         ]
 
-        x, y, period = shoot(hopf, [2, 4])
+        x, y, period = shoot(hopf, [2, 4], ODEparams=[params], solver=fsolve)
 
         # Ensure solution after 1 period is within 5% of the starting value
-        self.assertTrue(np.allclose([x, y], solve_ode(hopf, [x, y], [0, period], hmax=0.1, method="rk4")[-1], rtol=0.05))
+        self.assertTrue(np.allclose([x, y], solve_ode(hopf, [x, y], [0, period], hmax=0.1, method="rk4", ODEparams=[params])[-1], rtol=0.05))
 
         pass
 
