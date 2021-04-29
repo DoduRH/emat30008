@@ -30,7 +30,7 @@ def solve_pde(mx, mt, L, T, initial_function, kappa, plot=False, u_exact=None):
         # Save u_j at time t[j+1]
         u_j[:] = u_jp1[:]
     
-    if plot and u_exact is not None:
+    if plot:
         plot_pde(x, u_j, u_exact, T, L)
 
     return u_j
