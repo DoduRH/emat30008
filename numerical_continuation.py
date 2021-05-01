@@ -2,11 +2,11 @@ from numerical_shooting import shoot
 from root_finder import find_root
 import numpy as np
 
-def continuation(myode, x0, par0, vary_par, par_max, hmax=0.1, discretisation=shoot, solver=find_root):
+def continuation(func, x0, par0, vary_par, par_max, hmax=0.1, discretisation=shoot, solver=find_root):
     """finds the line
 
     Args:
-        myode (function): Function to find line for
+        func (function): Function to find line for
         x0 (List): Initial conditions
         par0 (Dict): Initial Parameters
         vary_par (str, optional): Name of parameter to vary
@@ -21,14 +21,14 @@ def continuation(myode, x0, par0, vary_par, par_max, hmax=0.1, discretisation=sh
     last_result = x0.copy()
     while par0[vary_par] + hmax < par_max:
         par0[vary_par] += hmax
-        last_result = solver(discretisation(myode), last_result, args=par0)
-        print(f"Done {vary_par=} {par0[vary_par]=} {last_result=} {myode(last_result, par0)=}")
+        last_result = solver(discretisation(func), last_result, args=par0)
+        print(f"Done {vary_par=} {par0[vary_par]=} {last_result=} {func(last_result, par0)=}")
         output.append((par0[vary_par], *last_result))
     
     par0[vary_par] = par_max
-    last_result = fsolve(myode, last_result, args=par0)
+    last_result = fsolve(func, last_result, args=par0)
     output.append((par0[vary_par], *last_result))
-    print(f"Done {vary_par=} {par0[vary_par]=} {last_result=} {myode(last_result, par0)=}")
+    print(f"Done {vary_par=} {par0[vary_par]=} {last_result=} {func(last_result, par0)=}")
 
     return output
 
