@@ -1,5 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
+from scipy.optimize import fsolve
 
 def tridiagonal_matrix(lmbda,  mx):
     arr = np.zeros((mx+1, mx+1))
@@ -17,6 +18,16 @@ def forward_euler_step(u_j, lmbda, mx):
     # Boundary conditions
     u_jp1[0] = 0
     u_jp1[mx] = 0
+    return u_jp1
+
+def backward_euler_step(u_j, lmbda, mx):
+    diagonal = tridiagonal_matrix(lmbda, mx)
+    u_jp1 = fsolve(lambda u_jp1: np.matmul(diagonal, u_jp1) - u_j, u_j)
+
+    # Boundary conditions
+    u_jp1[0] = 0
+    u_jp1[mx] = 0
+
     return u_jp1
 
 def solve_pde(mx, mt, L, T, initial_function, kappa, plot=False, u_exact=None):
@@ -38,7 +49,7 @@ def solve_pde(mx, mt, L, T, initial_function, kappa, plot=False, u_exact=None):
     for _ in range(0, mt):
         # Forward Euler timestep at inner mesh points
         # PDE discretised at position x[i], time t[j]
-        u_j = forward_euler_step(u_j, lmbda, mx)
+        u_j = backward_euler_step(u_j, lmbda, mx)
     
     if plot:
         plot_pde(x, u_j, u_exact, T, L)
