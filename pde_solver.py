@@ -33,8 +33,7 @@ def crank_nicholson_step(u_j, lmbda, mx, solver, **kwargs):
 
     return u_jp1
 
-def solve_pde(mx, mt, L, T, initial_function, kappa, boundary_condition, pde_step_method="forwardEuler", root_finder=fsolve, plot=False, u_exact=None):
-    # TODO: Docstring
+def solve_pde(mx, mt, L, T, initial_function, kappa, boundary_condition, pde_step_method="forwardEuler", root_finder=fsolve):
     # TODO: Clean other inputs
     # Clean inputs
     if type(pde_step_method) == str:
@@ -70,24 +69,7 @@ def solve_pde(mx, mt, L, T, initial_function, kappa, boundary_condition, pde_ste
         u_j[0] = boundary_condition(0, t)
         u_j[mx] = boundary_condition(L, t)
     
-    if plot:
-        plot_pde(x, u_j, u_exact, T, L)
-
     return u_j
-
-def plot_pde(x, u_j, u_exact=None, T=None, L=None):
-    # Plot the final result and exact solution
-    plt.plot(x,u_j,'ro',label='num')
-
-    if u_exact is not None and T is not None and L is not None:
-        xx = np.linspace(0,L,250)
-        plt.plot(xx,u_exact(xx,T),'b-',label='exact')
-
-    plt.xlabel('x')
-    plt.ylabel('u(x,0.5)')
-    plt.legend(loc='upper right')
-    plt.show()
-
 
 methods = {
     "forwardEuler": forward_euler_step,
