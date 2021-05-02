@@ -2,13 +2,13 @@ import numpy as np
 import matplotlib.pyplot as plt
 from scipy.optimize import fsolve
 
-def tridiagonal_matrix(lmbda,  mx):
+def tridiagonal_matrix(mx, main_diagonal, near_diagonal):
     arr = np.zeros((mx+1, mx+1))
     selector = np.tri(mx+1, mx+1, 1) - np.tri(mx+1,mx+1, -2)
 
-    arr[selector.astype(bool)] = -lmbda
+    arr[selector.astype(bool)] = near_diagonal
 
-    np.fill_diagonal(arr, 1 + 2 * lmbda)
+    np.fill_diagonal(arr, main_diagonal)
     return arr
 
 def forward_euler_step(u_j, lmbda, mx):
@@ -21,7 +21,7 @@ def forward_euler_step(u_j, lmbda, mx):
     return u_jp1
 
 def backward_euler_step(u_j, lmbda, mx):
-    diagonal = tridiagonal_matrix(lmbda, mx)
+    diagonal = tridiagonal_matrix(mx, 1 + 2*lmbda, -lmbda)
     u_jp1 = fsolve(lambda u_jp1: np.matmul(diagonal, u_jp1) - u_j, u_j)
 
     # Boundary conditions
