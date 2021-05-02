@@ -30,7 +30,20 @@ def backward_euler_step(u_j, lmbda, mx):
 
     return u_jp1
 
-def solve_pde(mx, mt, L, T, initial_function, kappa, plot=False, u_exact=None):
+def solve_pde(mx, mt, L, T, initial_function, kappa, pde_step_method="forwardEuler", plot=False, u_exact=None):
+    # TODO: Docstring
+    # TODO: Clean other inputs
+    # Clean inputs
+    if type(pde_step_method) == str:
+        if pde_step_method not in methods.keys():
+            method_options = list(methods.keys())
+            raise ValueError(f"{pde_step_method} is not recognised, must be one of {method_options}")
+        else:
+            pde_step = methods[pde_step_method]
+    else:
+        pde_step = pde_step_method
+
+
     # Set up the numerical environment variables
     x = np.linspace(0, L, mx+1)     # mesh points in space
     t = np.linspace(0, T, mt+1)     # mesh points in time
@@ -40,7 +53,6 @@ def solve_pde(mx, mt, L, T, initial_function, kappa, plot=False, u_exact=None):
 
     # Set up the solution variables
     u_j = np.zeros(x.size)        # u at current time step
-    u_jp1 = np.zeros(x.size)      # u at next time step
 
     # Set initial condition
     u_j = initial_function(x)
@@ -49,7 +61,7 @@ def solve_pde(mx, mt, L, T, initial_function, kappa, plot=False, u_exact=None):
     for _ in range(0, mt):
         # Forward Euler timestep at inner mesh points
         # PDE discretised at position x[i], time t[j]
-        u_j = backward_euler_step(u_j, lmbda, mx)
+        u_j = pde_step(u_j, lmbda, mx)
     
     if plot:
         plot_pde(x, u_j, u_exact, T, L)
@@ -68,6 +80,12 @@ def plot_pde(x, u_j, u_exact=None, T=None, L=None):
     plt.ylabel('u(x,0.5)')
     plt.legend(loc='upper right')
     plt.show()
+
+
+methods = {
+    "forwardEuler": forward_euler_step,
+    "backwardEuler": backward_euler_step,
+}
 
 def main():
     from math import pi
@@ -89,9 +107,25 @@ def main():
     mx = 10     # number of gridpoints in space
     mt = 1000   # number of gridpoints in time
 
-    u_j = solve_pde(mx, mt, L, T, u_I, kappa, True, u_exact=u_exact)
+    forwardEuler = solve_pde(mx, mt, L, T, u_I, kappa, "forwardEuler")
+    backwardEuler = solve_pde(mx, mt, L, T, u_I, kappa, "backwardEuler")
+
+
+    # Plot the final result and exact solution
+    x = np.linspace(0, L, mx+1)
+    plt.plot(x,forwardEuler, 'o', label='Forward Euler')
+    plt.plot(x,backwardEuler, 'o', label='Backward Euler')
+
+    xx = np.linspace(0,L,250)
+    plt.plot(xx,u_exact(xx,T),'b-',label='exact')
+
+    plt.xlabel('x')
+    plt.ylabel('u(x,0.5)')
+    plt.legend(loc='upper right')
+    plt.show()
 
 if __name__ == "__main__":
+    tridiagonal_matrix(10, 5)
     main()
 
 
