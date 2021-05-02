@@ -1,3 +1,4 @@
+from root_finder import find_root
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.optimize import fsolve
@@ -11,27 +12,28 @@ def tridiagonal_matrix(mx, main_diagonal, near_diagonal):
     np.fill_diagonal(arr, main_diagonal)
     return arr
 
-def forward_euler_step(u_j, lmbda, mx):
+# NOTE: Is kwargs the best way to do this?
+def forward_euler_step(u_j, lmbda, mx, **kwargs):
     u_jp1 = np.zeros((mx+1))      # u at next time step
     u_jp1[1:mx] = u_j[1:mx] + lmbda*(u_j[0:mx-1] - 2*u_j[1:mx] + u_j[2:mx+1])
 
     return u_jp1
 
-def backward_euler_step(u_j, lmbda, mx):
+def backward_euler_step(u_j, lmbda, mx, solver, **kwargs):
     diagonal = tridiagonal_matrix(mx, 1 + 2*lmbda, -lmbda)
-    u_jp1 = fsolve(lambda u_jp1: np.matmul(diagonal, u_jp1) - u_j, u_j)
+    u_jp1 = solver(lambda u_jp1: np.matmul(diagonal, u_jp1) - u_j, u_j)
 
     return u_jp1
 
-def crank_nicholson_step(u_j, lmbda, mx):
+def crank_nicholson_step(u_j, lmbda, mx, solver, **kwargs):
     acn = tridiagonal_matrix(mx, 1 + lmbda, -lmbda/2)
     bcn = tridiagonal_matrix(mx, 1 - lmbda, lmbda/2)
 
-    u_jp1 = fsolve(lambda u_jp1: np.matmul(acn, u_jp1) - np.matmul(bcn, u_j), u_j)
+    u_jp1 = solver(lambda u_jp1: np.matmul(acn, u_jp1) - np.matmul(bcn, u_j), u_j)
 
     return u_jp1
 
-def solve_pde(mx, mt, L, T, initial_function, kappa, boundary_condition, pde_step_method="forwardEuler", plot=False, u_exact=None):
+def solve_pde(mx, mt, L, T, initial_function, kappa, boundary_condition, pde_step_method="forwardEuler", root_finder=fsolve, plot=False, u_exact=None):
     # TODO: Docstring
     # TODO: Clean other inputs
     # Clean inputs
@@ -62,7 +64,7 @@ def solve_pde(mx, mt, L, T, initial_function, kappa, boundary_condition, pde_ste
     for t in range(0, mt):
         # Forward Euler timestep at inner mesh points
         # PDE discretised at position x[i], time t[j]
-        u_j = pde_step(u_j, lmbda, mx)
+        u_j = pde_step(u_j, lmbda, mx, solver=root_finder)
 
         # Apply boundary conditions
         u_j[0] = boundary_condition(0, t)
@@ -113,9 +115,9 @@ def main():
     mx = 10     # number of gridpoints in space
     mt = 1000   # number of gridpoints in time
 
-    forwardEuler = solve_pde(mx, mt, L, T, u_I, kappa, lambda x, t: 0, "forwardEuler")
-    backwardEuler = solve_pde(mx, mt, L, T, u_I, kappa, lambda x, t: 0, "backwardEuler")
-    crankNicholson = solve_pde(mx, mt, L, T, u_I, kappa, lambda x, t: 0, "crankNicholson")
+    forwardEuler = solve_pde(mx, mt, L, T, u_I, kappa, lambda x, t: 0, "forwardEuler", find_root)
+    backwardEuler = solve_pde(mx, mt, L, T, u_I, kappa, lambda x, t: 0, "backwardEuler", find_root)
+    crankNicholson = solve_pde(mx, mt, L, T, u_I, kappa, lambda x, t: 0, "crankNicholson", find_root)
 
 
     # Plot the final result and exact solution
