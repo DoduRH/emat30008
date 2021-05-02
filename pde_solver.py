@@ -1,6 +1,15 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
+def tridiagonal_matrix(lmbda,  mx):
+    arr = np.zeros((mx+1, mx+1))
+    selector = np.tri(mx+1, mx+1, 1) - np.tri(mx+1,mx+1, -2)
+
+    arr[selector.astype(bool)] = -lmbda
+
+    np.fill_diagonal(arr, 1 + 2 * lmbda)
+    return arr
+
 def forward_euler_step(u_j, lmbda, mx):
     u_jp1 = np.zeros((mx+1))      # u at next time step
     u_jp1[1:mx] = u_j[1:mx] + lmbda*(u_j[0:mx-1] - 2*u_j[1:mx] + u_j[2:mx+1])
