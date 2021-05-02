@@ -4,6 +4,16 @@ import matplotlib.pyplot as plt
 from scipy.optimize import fsolve
 
 def tridiagonal_matrix(mx, main_diagonal, near_diagonal):
+    """Create a matrix of shape (mx+1, mx+1) with values on the main diagonal and 1 cell above and below the main diagonal and zeros elsewhere
+
+    Args:
+        mx (int): Size of matrix
+        main_diagonal (float): Value to put on the main diagonal
+        near_diagonal (float): Value to put above and below the main diagonal
+
+    Returns:
+        array: Array with main_diagonal on the main diagonal and near_diagonal above and below
+    """
     arr = np.zeros((mx+1, mx+1))
     selector = np.tri(mx+1, mx+1, 1) - np.tri(mx+1,mx+1, -2)
 
@@ -14,18 +24,51 @@ def tridiagonal_matrix(mx, main_diagonal, near_diagonal):
 
 # NOTE: Is kwargs the best way to do this?
 def forward_euler_step(u_j, lmbda, mx, **kwargs):
+    """Do a single step using the Forward Euler scheme
+
+    Args:
+        u_j (array): Values at t0
+        lmbda (float): Lambda value to use
+        mx (int): Number of points in space
+
+    Returns:
+        array: Values at t1
+    """
+
     u_jp1 = np.zeros((mx+1))      # u at next time step
     u_jp1[1:mx] = u_j[1:mx] + lmbda*(u_j[0:mx-1] - 2*u_j[1:mx] + u_j[2:mx+1])
 
     return u_jp1
 
 def backward_euler_step(u_j, lmbda, mx, solver, **kwargs):
+    """Do a single step using the Backwards Euler scheme
+
+    Args:
+        u_j (array): Values at t0
+        lmbda (float): Lambda value to use
+        mx (int): Number of points in space
+        solver (function): Solver to use
+
+    Returns:
+        array: Values at t1
+    """
     diagonal = tridiagonal_matrix(mx, 1 + 2*lmbda, -lmbda)
     u_jp1 = solver(lambda u_jp1: np.matmul(diagonal, u_jp1) - u_j, u_j)
 
     return u_jp1
 
 def crank_nicholson_step(u_j, lmbda, mx, solver, **kwargs):
+    """Do a single step using the Crank-Nicholson scheme
+
+    Args:
+        u_j (array): Values at t0
+        lmbda (float): Lambda value to use
+        mx (int): Number of points in space
+        solver (function): Solver to use
+
+    Returns:
+        array: Values at t1
+    """
     acn = tridiagonal_matrix(mx, 1 + lmbda, -lmbda/2)
     bcn = tridiagonal_matrix(mx, 1 - lmbda, lmbda/2)
 
@@ -34,6 +77,23 @@ def crank_nicholson_step(u_j, lmbda, mx, solver, **kwargs):
     return u_jp1
 
 def solve_pde(mx, mt, L, T, initial_function, kappa, boundary_condition, pde_step_method="forwardEuler", root_finder=fsolve):
+    """Solve pde with initial_conditions given by intitial_functions(x) and boundary conditions given by boundary_conditions(x, t)
+
+    Args:
+        mx (int): Number of poitns in space
+        mt (int): Number of points in time
+        L (float): Maximum x value
+        T (float): Maximum t value
+        initial_function (function): Function to give initial conditions
+        kappa (float): Kappa value to use when solving
+        boundary_condition (function): Function to give boundary conditions.  Must have signature f(x, t) -> float
+        pde_step_method (str, optional): Method of 1 pde_step. Defaults to "forwardEuler".
+        root_finder (function, optional): Root finder to use if required by pde_step_method. Defaults to fsolve.
+
+    Returns:
+        array: Final values at t = T
+    """
+
     # TODO: Clean other inputs
     # Clean inputs
     if type(pde_step_method) == str:
@@ -68,7 +128,7 @@ def solve_pde(mx, mt, L, T, initial_function, kappa, boundary_condition, pde_ste
         # Apply boundary conditions
         u_j[0] = boundary_condition(0, t)
         u_j[mx] = boundary_condition(L, t)
-    
+
     return u_j
 
 methods = {
