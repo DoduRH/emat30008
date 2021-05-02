@@ -14,11 +14,16 @@ def tridiagonal_matrix(mx, main_diagonal, near_diagonal):
     Returns:
         array: Array with main_diagonal on the main diagonal and near_diagonal above and below
     """
+    # Initialise array with zeros
     arr = np.zeros((mx+1, mx+1))
+
+    # Create selector with 1s on the main diagonal and 1 above and below it
     selector = np.tri(mx+1, mx+1, 1) - np.tri(mx+1,mx+1, -2)
 
+    # Use selector to put near_diagonal 
     arr[selector.astype(bool)] = near_diagonal
 
+    # Fill main diagonal with main_diagonal in-place
     np.fill_diagonal(arr, main_diagonal)
     return arr
 
@@ -35,7 +40,9 @@ def forward_euler_step(u_j, lmbda, mx, **kwargs):
         array: Values at t1
     """
 
-    u_jp1 = np.zeros((mx+1))      # u at next time step
+    # Initialise as zeros
+    u_jp1 = np.zeros((mx+1))
+    # Update everything except far left and right values
     u_jp1[1:mx] = u_j[1:mx] + lmbda*(u_j[0:mx-1] - 2*u_j[1:mx] + u_j[2:mx+1])
 
     return u_jp1
@@ -52,8 +59,10 @@ def backward_euler_step(u_j, lmbda, mx, solver, **kwargs):
     Returns:
         array: Values at t1
     """
-    diagonal = tridiagonal_matrix(mx, 1 + 2*lmbda, -lmbda)
-    u_jp1 = solver(lambda u_jp1: np.matmul(diagonal, u_jp1) - u_j, u_j)
+    # Generate tridiagonal matrix
+    tridiagonal = tridiagonal_matrix(mx, 1 + 2*lmbda, -lmbda)
+    # Create anonymous function and pass it to solve
+    u_jp1 = solver(lambda u_jp1: np.matmul(tridiagonal, u_jp1) - u_j, u_j)
 
     return u_jp1
 
@@ -69,9 +78,11 @@ def crank_nicholson_step(u_j, lmbda, mx, solver, **kwargs):
     Returns:
         array: Values at t1
     """
+    # Generate tridiagonal matricies
     acn = tridiagonal_matrix(mx, 1 + lmbda, -lmbda/2)
     bcn = tridiagonal_matrix(mx, 1 - lmbda, lmbda/2)
 
+    # Create anonymous function and pass it to solve
     u_jp1 = solver(lambda u_jp1: np.matmul(acn, u_jp1) - np.matmul(bcn, u_j), u_j)
 
     return u_jp1
@@ -131,6 +142,7 @@ def solve_pde(mx, mt, L, T, initial_function, kappa, boundary_condition, pde_ste
 
     return u_j
 
+# Methods available to use
 methods = {
     "forwardEuler": forward_euler_step,
     "backwardEuler": backward_euler_step,
@@ -157,6 +169,7 @@ def main():
     mx = 10     # number of gridpoints in space
     mt = 1000   # number of gridpoints in time
 
+    # Solve for each method
     forwardEuler = solve_pde(mx, mt, L, T, u_I, kappa, lambda x, t: 0, "forwardEuler", find_root)
     backwardEuler = solve_pde(mx, mt, L, T, u_I, kappa, lambda x, t: 0, "backwardEuler", find_root)
     crankNicholson = solve_pde(mx, mt, L, T, u_I, kappa, lambda x, t: 0, "crankNicholson", find_root)
