@@ -30,6 +30,17 @@ def backward_euler_step(u_j, lmbda, mx):
 
     return u_jp1
 
+def crank_nicholson_step(u_j, lmbda, mx):
+    acn = tridiagonal_matrix(mx, 1 + lmbda, -lmbda/2)
+    bcn = tridiagonal_matrix(mx, 1 - lmbda, lmbda/2)
+
+    u_jp1 = fsolve(lambda u_jp1: np.matmul(acn, u_jp1) - np.matmul(bcn, u_j), u_j)
+    
+    # Boundary conditions
+    u_jp1[0] = 0
+    u_jp1[mx] = 0
+    return u_jp1
+
 def solve_pde(mx, mt, L, T, initial_function, kappa, pde_step_method="forwardEuler", plot=False, u_exact=None):
     # TODO: Docstring
     # TODO: Clean other inputs
@@ -85,6 +96,7 @@ def plot_pde(x, u_j, u_exact=None, T=None, L=None):
 methods = {
     "forwardEuler": forward_euler_step,
     "backwardEuler": backward_euler_step,
+    "crankNicholson": crank_nicholson_step,
 }
 
 def main():
@@ -109,12 +121,14 @@ def main():
 
     forwardEuler = solve_pde(mx, mt, L, T, u_I, kappa, "forwardEuler")
     backwardEuler = solve_pde(mx, mt, L, T, u_I, kappa, "backwardEuler")
+    crankNicholson = solve_pde(mx, mt, L, T, u_I, kappa, "crankNicholson")
 
 
     # Plot the final result and exact solution
     x = np.linspace(0, L, mx+1)
     plt.plot(x,forwardEuler, 'o', label='Forward Euler')
     plt.plot(x,backwardEuler, 'o', label='Backward Euler')
+    plt.plot(x,crankNicholson, 'o', label='Crank Nicholson')
 
     xx = np.linspace(0,L,250)
     plt.plot(xx,u_exact(xx,T),'b-',label='exact')
@@ -125,7 +139,6 @@ def main():
     plt.show()
 
 if __name__ == "__main__":
-    tridiagonal_matrix(10, 5)
     main()
 
 
