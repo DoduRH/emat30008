@@ -15,18 +15,11 @@ def forward_euler_step(u_j, lmbda, mx):
     u_jp1 = np.zeros((mx+1))      # u at next time step
     u_jp1[1:mx] = u_j[1:mx] + lmbda*(u_j[0:mx-1] - 2*u_j[1:mx] + u_j[2:mx+1])
 
-    # Boundary conditions
-    u_jp1[0] = 0
-    u_jp1[mx] = 0
     return u_jp1
 
 def backward_euler_step(u_j, lmbda, mx):
     diagonal = tridiagonal_matrix(mx, 1 + 2*lmbda, -lmbda)
     u_jp1 = fsolve(lambda u_jp1: np.matmul(diagonal, u_jp1) - u_j, u_j)
-
-    # Boundary conditions
-    u_jp1[0] = 0
-    u_jp1[mx] = 0
 
     return u_jp1
 
@@ -35,13 +28,10 @@ def crank_nicholson_step(u_j, lmbda, mx):
     bcn = tridiagonal_matrix(mx, 1 - lmbda, lmbda/2)
 
     u_jp1 = fsolve(lambda u_jp1: np.matmul(acn, u_jp1) - np.matmul(bcn, u_j), u_j)
-    
-    # Boundary conditions
-    u_jp1[0] = 0
-    u_jp1[mx] = 0
+
     return u_jp1
 
-def solve_pde(mx, mt, L, T, initial_function, kappa, pde_step_method="forwardEuler", plot=False, u_exact=None):
+def solve_pde(mx, mt, L, T, initial_function, kappa, boundary_condition, pde_step_method="forwardEuler", plot=False, u_exact=None):
     # TODO: Docstring
     # TODO: Clean other inputs
     # Clean inputs
@@ -69,10 +59,14 @@ def solve_pde(mx, mt, L, T, initial_function, kappa, pde_step_method="forwardEul
     u_j = initial_function(x)
 
     # Solve the PDE: loop over all time points
-    for _ in range(0, mt):
+    for t in range(0, mt):
         # Forward Euler timestep at inner mesh points
         # PDE discretised at position x[i], time t[j]
         u_j = pde_step(u_j, lmbda, mx)
+
+        # Apply boundary conditions
+        u_j[0] = boundary_condition(0, t)
+        u_j[mx] = boundary_condition(L, t)
     
     if plot:
         plot_pde(x, u_j, u_exact, T, L)
@@ -119,9 +113,9 @@ def main():
     mx = 10     # number of gridpoints in space
     mt = 1000   # number of gridpoints in time
 
-    forwardEuler = solve_pde(mx, mt, L, T, u_I, kappa, "forwardEuler")
-    backwardEuler = solve_pde(mx, mt, L, T, u_I, kappa, "backwardEuler")
-    crankNicholson = solve_pde(mx, mt, L, T, u_I, kappa, "crankNicholson")
+    forwardEuler = solve_pde(mx, mt, L, T, u_I, kappa, lambda x, t: 0, "forwardEuler")
+    backwardEuler = solve_pde(mx, mt, L, T, u_I, kappa, lambda x, t: 0, "backwardEuler")
+    crankNicholson = solve_pde(mx, mt, L, T, u_I, kappa, lambda x, t: 0, "crankNicholson")
 
 
     # Plot the final result and exact solution
