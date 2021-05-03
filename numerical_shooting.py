@@ -4,7 +4,7 @@ from ode_solver import solve_ode
 from repeat_finder import TimePeriodNotFoundError, find_period
 from root_finder import find_root
 
-def shoot(f, initial, tmax=np.inf, solver=find_root, ODEparams=[]):
+def shoot(f, initial, approximate_solution=None, tmax=np.inf, solver=find_root, ODEparams=[]):
     """Use numerical shooting to calculate the initial conditions and period for f
 
     Args:
@@ -18,7 +18,10 @@ def shoot(f, initial, tmax=np.inf, solver=find_root, ODEparams=[]):
     """
 
     # Find approximate location of periodic behaviour
-    approx_period = find_period(lambda t: solve_ode(f, initial, t, 0.1, "rk4", ODEparams), tmax=tmax)
+    if approximate_solution is None:
+        approx_period = find_period(lambda t: solve_ode(f, initial, t, 0.1, "rk4", ODEparams), tmax=tmax)
+    else:
+        approx_period = approximate_solution
 
     if approx_period[-1] == -1:
         raise TimePeriodNotFoundError
@@ -39,13 +42,14 @@ def shoot(f, initial, tmax=np.inf, solver=find_root, ODEparams=[]):
     divisor = 2
     
     # This assumes the minimum period is 1
-    while divisor < orbit[-1]: 
-        while np.allclose(orbit[:-1], x0, atol=1e-3):
-            orbit[-1] /= divisor
-            x0 = solve_ode(f, orbit[:-1], [0, orbit[-1]], 0.1, "RK4", ODEparams)[-1]
-        orbit[-1] *= divisor # revert final division
-        x0 = orbit[:-1] # Reset x0
-        divisor += 1
+    if approximate_solution is None:
+        while divisor < orbit[-1]: 
+            while np.allclose(orbit[:-1], x0, rtol=1e-3):
+                orbit[-1] /= divisor
+                x0 = solve_ode(f, orbit[:-1], [0, orbit[-1]], 0.1, "RK4", ODEparams)[-1]
+            orbit[-1] *= divisor # revert final division
+            x0 = orbit[:-1] # Reset x0
+            divisor += 1
         
     # Run solver once more to re-align to a single orbit
     orbit = solver(g, orbit)
@@ -60,9 +64,9 @@ if __name__=="__main__":
     beta = 0.2
 
     # Lokta-Volterra equations
-    funcs = [
-        lambda t, x, y: x * (1 - x) - (alpha * x * y) / (delta + x), # dx/dt
-        lambda t, x, y: beta * y * (1 - (y/x)), # dy/dt
+    funcs = lambda t, U: [
+        U[0] * (1 - U[0]) - (alpha * U[0] * U[1]) / (delta + U[0]), # dU[0]/dt
+        beta * U[1] * (1 - (U[1]/U[0])), # dU[1]/dt
     ]
 
     # Lokta-Voltera initial conditions
