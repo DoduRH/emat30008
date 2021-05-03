@@ -1,8 +1,10 @@
 import numpy as np
 
+class JacobianNotConvergedError(Exception):
+    pass
 
-def jacobian_matrix(f, x, eps=1e-3):
-    """Numerically approximate jacobian matrix for f
+def jacobian_matrix(f, x, eps=1e-3, min_eps=1e-13, allclose_args=dict(rtol=1e-12)):
+    """Numerically approximate jacobian matrix for f starting from eps reducing by 1 order of magnitude each time until a stable solution is found
 
     Args:
         f (function): (Multivariate) function
@@ -12,22 +14,30 @@ def jacobian_matrix(f, x, eps=1e-3):
     Returns:
         np.ndarray: Jacobian matrix approximation for f at x
     """
-    J = np.zeros([len(x), len(x)], dtype=np.float64)
+    j_old = np.full([len(x), len(x)], fill_value=np.inf)
+    j = np.zeros([len(x), len(x)], dtype=np.float64)
 
     with np.errstate(divide='ignore', invalid='ignore'):
-        for i, _ in enumerate(x):
-            x1 = x.copy()
-            x2 = x.copy()
+        while eps > min_eps and not np.allclose(j_old, j, **allclose_args):
+            j_old = j.copy()
+            j = np.zeros([len(x), len(x)], dtype=np.float64)
+            for i, _ in enumerate(x):
+                x1 = x.copy()
+                x2 = x.copy()
 
-            x1[i] += eps
-            x2[i] -= eps
+                x1[i] += eps
+                x2[i] -= eps
 
-            f1 = np.array(f(x1))
-            f2 = np.array(f(x2))
+                f1 = np.array(f(x1))
+                f2 = np.array(f(x2))
 
-            J[:,i] = (f1 - f2) / (2 * eps)
+                j[:,i] = (f1 - f2) / (2 * eps)
+            eps /= 10
+            
+    if not np.allclose(j_old, j, **allclose_args):
+        raise JacobianNotConvergedError("The jacobian matrix did not converge, try scipy.optimize.fsolve as the solver")
 
-    return J
+    return j
 
 def newton_step(f, u):
     """Do a single newton step
@@ -74,14 +84,14 @@ def main():
     beta = 0.5
     sigma = -1
 
-    f = [
-        lambda t, u1, u2: beta * u1 -        u2 + sigma * u1 * (u1**2 + u2**2),
-        lambda t, u1, u2:        u1 + beta * u2 + sigma * u2 * (u1**2 + u2**2),
+    f = lambda t, U: [
+        beta * U[0] -        U[1] + sigma * U[0] * (U[0]**2 + U[1]**2),
+               U[0] + beta * U[1] + sigma * U[1] * (U[0]**2 + U[1]**2),
     ]
 
     g = lambda U: [
         *(U[:-1] - solve_ode(f, U[:-1], [0, U[-1]], 0.1, "RK4")[-1]),
-        f[0](U[-1], *U[:-1]), # dx/dt(0) = 0
+        f(U[-1], U[:-1])[0], # dx/dt(0) = 0
     ]
 
     approx_period = np.array([1, 0, 7])
@@ -98,9 +108,9 @@ def main():
     delta = 0.1
     beta = 0.2
 
-    funcs = [
-        lambda t, x, y: x * (1 - x) - (alpha * x * y) / (delta + x), # dx/dt
-        lambda t, x, y: beta * y * (1 - (y/x)), # dy/dt
+    funcs = lambda t, U: [
+        U[0] * (1 - U[0]) - (alpha * U[0] * U[1]) / (delta + U[0]), # dU[0]/dt
+        beta * U[1] * (1 - (U[1]/U[0])), # dU[1]/dt
     ]
 
     g = lambda U: [
