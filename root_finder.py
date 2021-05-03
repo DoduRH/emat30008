@@ -3,7 +3,9 @@ import numpy as np
 class JacobianNotConvergedError(Exception):
     pass
 
-def jacobian_matrix(f, x, eps=1e-3, min_eps=1e-13, allclose_args=dict(rtol=1e-12)):
+
+
+def jacobian_matrix(f, x, eps=1e-8, allclose_args=dict(rtol=1e-12)):
     """Numerically approximate jacobian matrix for f starting from eps reducing by 1 order of magnitude each time until a stable solution is found
 
     Args:
@@ -18,21 +20,26 @@ def jacobian_matrix(f, x, eps=1e-3, min_eps=1e-13, allclose_args=dict(rtol=1e-12
     j = np.zeros([len(x), len(x)], dtype=np.float64)
 
     with np.errstate(divide='ignore', invalid='ignore'):
-        while eps > min_eps and not np.allclose(j_old, j, **allclose_args):
+        while not np.allclose(j_old, j, **allclose_args):
             j_old = j.copy()
             j = np.zeros([len(x), len(x)], dtype=np.float64)
             for i, _ in enumerate(x):
+                x0 = x.copy()
                 x1 = x.copy()
                 x2 = x.copy()
+                x3 = x.copy()
 
+                x0[i] += 2 * eps
                 x1[i] += eps
                 x2[i] -= eps
+                x3[i] -= 2 * eps
 
+                f0 = np.array(f(x0))
                 f1 = np.array(f(x1))
                 f2 = np.array(f(x2))
+                f3 = np.array(f(x3))
 
-                j[:,i] = (f1 - f2) / (2 * eps)
-            eps /= 10
+                j[:,i] = (-f0 + 8 * f1 - 8 * f2 + f3) / (12 * eps)
             
     if not np.allclose(j_old, j, **allclose_args):
         raise JacobianNotConvergedError("The jacobian matrix did not converge, try scipy.optimize.fsolve as the solver")
