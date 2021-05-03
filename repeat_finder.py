@@ -23,9 +23,13 @@ def find_repeats(arr):
     unique = np.array(np.unique(rounded, axis=0, return_counts=True, return_index=True)).T
 
     # Ignore y vals and count
-    _, index, _ = unique[unique[:,2].argsort()][-1]
+    _, index, count = unique[unique[:,2].argsort()][-1]
 
     output = arr[int(index)]
+
+    if count > len(arr)*0.5:
+        # If half the points are the same, it is an equilibrium (period of 0)
+        return (*output, 0)
 
     occurences = []
     last = np.nan
@@ -49,7 +53,7 @@ def find_repeats(arr):
     return (*output, period)
 
 
-def find_period(func, t0=1, tstep=10, tmax=np.inf):
+def find_period(func, t0=1, tstep=10, tmax=np.inf, params=[]):
     """Find estimate for period and initial conditions of func
 
     Args:
@@ -66,12 +70,12 @@ def find_period(func, t0=1, tstep=10, tmax=np.inf):
     t = np.arange(0, t0, 0.1)
     # TODO: Cache solution and append new variables to increase performance?
     # Would require func to take t and x0
-    *initials, period = find_repeats(func(t))
+    *initials, period = find_repeats(func(t, *params))
 
     while period == -1 and t0 < tmax:
         t0 += tstep
         t = np.arange(0, t0, 0.1)
-        *initials, period = find_repeats(func(t))
+        *initials, period = find_repeats(func(t, *params))
 
     # If no period was found, raise error
     if period == -1:
