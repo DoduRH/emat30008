@@ -5,7 +5,7 @@ class JacobianNotConvergedError(Exception):
 
 
 
-def jacobian_matrix(f, x, eps=1e-8):
+def jacobian_matrix(f, x, args, eps=1e-8):
     """Numerically approximate jacobian matrix for f starting from eps reducing by 1 order of magnitude each time until a stable solution is found
 
     Args:
@@ -29,10 +29,10 @@ def jacobian_matrix(f, x, eps=1e-8):
             x2[i] -= eps
             x3[i] -= 2 * eps
 
-            f0 = np.array(f(x0))
-            f1 = np.array(f(x1))
-            f2 = np.array(f(x2))
-            f3 = np.array(f(x3))
+            f0 = np.array(f(x0, *args))
+            f1 = np.array(f(x1, *args))
+            f2 = np.array(f(x2, *args))
+            f3 = np.array(f(x3, *args))
 
             j[:,i] = (-f0 + 8 * f1 - 8 * f2 + f3) / (12 * eps)
             
@@ -41,7 +41,7 @@ def jacobian_matrix(f, x, eps=1e-8):
 
     return j
 
-def newton_step(f, u):
+def newton_step(f, u, args):
     """Do a single newton step
 
     Args:
@@ -51,14 +51,14 @@ def newton_step(f, u):
     Returns:
         float: Improved estimate for solution to f(u) = 0
     """
-    jacobian = jacobian_matrix(f, u)
+    jacobian = jacobian_matrix(f, u, args)
     # Ensure jacobian is not singular and calculate the inverse
     inverse = np.linalg.inv(jacobian)
     
     with np.errstate(divide='ignore', invalid='ignore'):
-        return u - np.matmul(inverse, f(u))
+        return u - np.matmul(inverse, f(u, *args))
 
-def find_root(f, u):
+def find_root(f, u, args=None):
     """Calculates x where f(x) = 0
 
     Args:
@@ -70,15 +70,20 @@ def find_root(f, u):
     """
     # Clean initial guess to numpy array
     u = np.array(u, dtype=np.float64).reshape(-1)
+    if args is None:
+        args = []
+
+    if type(args) != list:
+        args = [args]
 
     u_old = np.ones(u.shape) * np.inf
 
     while not np.allclose(u, u_old):
         u_old = u
-        u = newton_step(f, u)
+        u = newton_step(f, u, args)
         if not np.isfinite(u).all():
             raise ArithmeticError
-    assert np.allclose(f(u), 0), "Failed to converge"
+    assert np.allclose(f(u, *args), 0), "Failed to converge"
     
     return u
 
