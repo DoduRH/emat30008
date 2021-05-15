@@ -2,7 +2,8 @@ from numerical_shooting import shoot
 from root_finder import find_root
 import numpy as np
 
-def continuation(func, x0, par0, vary_par, par_max, hmax=0.1, discretisation=shoot, solver=find_root):
+def continuation(func, x0, par0, vary_par, par_max, delta_multiplier=0.1, discretisation=shoot, solver=find_root):
+
     """finds the line
 
     Args:
@@ -18,17 +19,33 @@ def continuation(func, x0, par0, vary_par, par_max, hmax=0.1, discretisation=sho
         (array): Array of points 
     """
     output = []
-    last_result = x0.copy()
-    while par0[vary_par] + hmax < par_max:
-        par0[vary_par] += hmax
-        last_result = solver(discretisation(func), last_result, args=par0)
-        print(f"Done {vary_par=} {par0[vary_par]=} {last_result=} {func(last_result, par0)=}")
-        output.append((par0[vary_par], *last_result))
+    last_result = np.append(x0, par0[vary_par]) # x0.copy()
+    old_result = last_result[:]
+    while last_result[-1] < par_max:
+        old_old_result = old_result[:]
+        old_result = last_result[:]
+
+        # Secant
+        u_delta = old_result - old_old_result
+
+        # Prediction
+        prediction = last_result + u_delta * delta_multiplier
+
+        # NOTE: 0.1 shouldnt be needed
+        g = lambda U: [
+            *discretisation(func)(U[:-1], p={vary_par: U[-1]}),
+            0.1-np.dot(prediction - U, last_result - U),  # delta v dot (v - v_tilde)
+        ]
+
+        last_result = solver(g, prediction)
+
+        print(f"Done {last_result=} {func(last_result[:-1], p={vary_par: last_result[-1]})=}")
+        output.append((last_result[-1], *last_result[:-1]))
     
     par0[vary_par] = par_max
-    last_result = fsolve(func, last_result, args=par0)
+    last_result = fsolve(discretisation(func), last_result[:-1], args=par0)
     output.append((par0[vary_par], *last_result))
-    print(f"Done {vary_par=} {par0[vary_par]=} {last_result=} {func(last_result, par0)=}")
+    print(f"Done {last_result=} {func(last_result, p=par0)=}")
 
     return output
 
@@ -78,7 +95,7 @@ if __name__ == "__main__":
         par0,  # the initial parameters
         vary_par="c",  # the parameter to vary
         par_max=2,
-        hmax=0.05, # max step size
+        delta_multiplier=0.1, # max step size
         discretisation=lambda x: x,  # the discretisation to use
         solver=fsolve,  # the solver to use
     )
