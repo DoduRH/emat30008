@@ -3,21 +3,22 @@ from root_finder import find_root
 import numpy as np
 
 def continuation(func, x0, par0, vary_par, par_max, delta_multiplier=0.1, discretisation=lambda x: x, solver=find_root):
-
-    """finds the line
+    """Finds points where the function is stable
 
     Args:
-        func (function): Function to find line for
+        func (function): Function to find the line for
         x0 (List): Initial conditions
-        par0 (Dict): Initial Parameters
-        vary_par (str, optional): Name of parameter to vary
-        vary_par_vals (itterable, optional): Values to assign to par0[vary_par]. Defaults to np.linspace(0, 1, 100).
-        discretisation (function, optional): Numerical shooting method. Defaults to shoot.
-        solver (function, optional): Root finder to use. Defaults to find_root.
-    
+        par0 (Dict): Initial parameters
+        vary_par (str): Key of dictionary to vary
+        par_max (float): Max value of var_par
+        delta_multiplier (float, optional): Jump between points. Defaults to 0.1.
+        discretisation (function, optional): Discretisation function. Defaults to passing func through.
+        solver (function, optional): Solver to use. Defaults to find_root.
+
     Returns:
-        (array): Array of points 
+        array: Array of points where func is stable
     """
+
     output = []
     last_result = np.append(x0, par0[vary_par]) # x0.copy()
     old_result = last_result[:]
