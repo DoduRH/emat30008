@@ -2,7 +2,7 @@ from numerical_shooting import shoot
 from root_finder import find_root
 import numpy as np
 
-def continuation(func, x0, par0, vary_par, par_max, delta_multiplier=0.1, discretisation=shoot, solver=find_root):
+def continuation(func, x0, par0, vary_par, par_max, delta_multiplier=0.1, discretisation=lambda x: x, solver=find_root):
 
     """finds the line
 
