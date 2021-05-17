@@ -79,6 +79,27 @@ class ODETests(unittest.TestCase):
         self.assertRaises(ArithmeticError, solve_ode, eq, initial, t, 0.1, "rk4")
         pass
 
+    def test_uncastable_x0(self):
+        """Check ValueError is raised when initial conditions can't be cast to float
+        """
+        eq = lambda t, U: [
+            U[1], # dx/dt
+            -U[0]/ (2*U[0]-U[1]), # dy/dt
+        ]
+
+        initial = [1, "2"]
+
+        t = np.linspace(0, 10, 10)
+
+        p = dict(
+            alpha = 1,
+            delta = 0.1,
+            beta = 0.2,
+        )
+
+        self.assertRaises(ValueError, solve_ode, eq, initial, t, 0.1, "rk4")
+        pass
+
 
 class repeatFinderTests(unittest.TestCase):    
     def test_lokta_volterra(self):
