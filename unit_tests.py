@@ -1,5 +1,5 @@
 from repeat_finder import TimePeriodNotFoundError, find_period
-from root_finder import find_root
+from root_finder import find_root, jacobian_matrix
 import unittest
 import numpy as np
 from ode_solver import solve_ode
@@ -109,6 +109,35 @@ class repeatFinderTests(unittest.TestCase):
         self.assertRaises(TimePeriodNotFoundError, find_period, lambda t: solve_ode(Lokta_Volterra, [0.25, 0.25], t, 0.1, "rk4", [params]), tmax=50)
         pass
 
+
+class jacobianFindingTests(unittest.TestCase):
+    def test_linear(self):
+        """Check jacobian matrix for 1d linear solve
+        """
+        f = lambda U: [2 * U[0]]
+        exact = lambda x: 2
+
+        self.assertTrue(np.allclose(jacobian_matrix(f, [5]), exact(5)))
+
+        pass
+
+    def test_quadratic(self):
+        """Check jacobian matrix for 1d quadratic
+        """
+        f = lambda U: [2 * U[0] ** 2 + 3 * U[0] + 6]
+        exact = lambda x: 4 * x + 3
+
+        self.assertTrue(np.allclose(jacobian_matrix(f, [5]), exact(5)))
+        pass
+
+    def test_sin(self):
+        """Check jacobian matrix for 1d sin wave
+        """
+        f = lambda U: [np.sin(U[0])]
+        exact = lambda x: np.cos(x)
+
+        self.assertTrue(np.allclose(jacobian_matrix(f, [5]), exact(5)))
+        pass
 
 class rootFindingTests(unittest.TestCase):
     def test_linear(self):
