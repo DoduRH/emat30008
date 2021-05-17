@@ -187,7 +187,7 @@ class numericalShootingTests(unittest.TestCase):
             beta = 0.2,
         )
 
-        self.assertRaises(TimePeriodNotFoundError, shoot, Lokta_Volterra, [0.25, 0.25], 20, ODEparams=[params])
+        self.assertRaises(TimePeriodNotFoundError, shoot, Lokta_Volterra, [0.25, 0.25], tmax=20, ODEparams=[params])
         pass
     
     def test_hopf_bifurcation(self):

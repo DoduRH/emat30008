@@ -21,7 +21,7 @@ def shoot(f, initial, approximate_solution=None, tmax=np.inf, solver=find_root, 
     if approximate_solution is None:
         approx_period = find_period(lambda t: solve_ode(f, initial, t, 0.1, "rk4", ODEparams), tmax=tmax)
     else:
-        approx_period = approximate_solution
+        approx_period = np.append(initial, approximate_solution)
 
     if approx_period[-1] == -1:
         raise TimePeriodNotFoundError
