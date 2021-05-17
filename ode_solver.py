@@ -1,6 +1,6 @@
 import numpy as np
 
-def euler_step(ODE, initial_values, t0, h, fargs=[]):
+def euler_step(ODE, initial_values, t0, h, fargs=None):
 	"""Performs 1 Euler step from t0 to t1 (t + h)
 
 	Args:
@@ -8,18 +8,20 @@ def euler_step(ODE, initial_values, t0, h, fargs=[]):
 		initial_values (list): List of initial values
 		t0 (float): Starting value for Euler step
 		h (float): Step size between t0 and t1
-		fargs (list, optional): Arguments to pass to ODE. Defaults to [].
+		fargs (list, optional): Arguments to pass to ODE. Defaults to no arguments.
 
 	Returns:
 		list: List of values at t1
 	"""
+	if fargs is None:
+		fargs = []
 
 	# Do step for each function
 	x1 = initial_values + np.array(ODE(t0, initial_values, *fargs))*h
 
 	return x1
 
-def RK4_step(ODE, initial_values, t0, h, fargs=[]):
+def RK4_step(ODE, initial_values, t0, h, fargs=None):
 	"""Performs 1 fourth Order Runge-Kutta step from t0 to t1 (t + h)
 
 	Args:
@@ -27,11 +29,13 @@ def RK4_step(ODE, initial_values, t0, h, fargs=[]):
 		initial_values (list): List of initial values
 		t0 (float): Starting value for RK4 step
 		h (float): Step size between t0 and t1
-		fargs (list, optional): Arguments to pass to ODE. Defaults to [].
+		fargs (list, optional): Arguments to pass to ODE. Defaults to no arguments.
 
 	Returns:
 		list: List of values at t1
 	"""
+	if fargs is None:
+		fargs = []
 	
 	# Calculate k 1-4 for each function
 	k1 = h * np.array(ODE(t0, initial_values, *fargs))
@@ -47,7 +51,7 @@ def RK4_step(ODE, initial_values, t0, h, fargs=[]):
 
 	return x1
 
-def solve_to(step_func, ODE, x0, t0, t1, hmax, ODEparams=[]):
+def solve_to(step_func, ODE, x0, t0, t1, hmax, ODEparams=None):
 	"""Perform multiple steps between t0 and t1 with max stepsize of hmax
 
 	Args:
@@ -57,11 +61,15 @@ def solve_to(step_func, ODE, x0, t0, t1, hmax, ODEparams=[]):
 		t0 (float): Starting point for integration
 		t1 (float): End point for integration
 		hmax (float): Max jump for each step
-        ODEparams (list, optional): Optional extra parameters to pass to the ODE. Defaults to []
+        ODEparams (list, optional): Optional extra parameters to pass to the ODE. Defaults to no arguments
 
 	Returns:
 		list: List of values at t1
 	"""
+
+	if ODEparams is None:
+		ODEparams = []
+
 	t = t0
 	x = x0
 	with np.errstate(divide='ignore', invalid='ignore'):
@@ -80,7 +88,7 @@ def solve_to(step_func, ODE, x0, t0, t1, hmax, ODEparams=[]):
 
 	return x
 
-def solve_ode(funcs, x0, t, hmax, method="euler", ODEparams=[]):
+def solve_ode(funcs, x0, t, hmax, method="euler", ODEparams=None):
 	"""Solve system of ODEs returning value at each point in t
 
 	Args:
@@ -89,11 +97,14 @@ def solve_ode(funcs, x0, t, hmax, method="euler", ODEparams=[]):
 		t (list): Values of t to solve for
 		hmax (float): Max stepsize
 		method (str, optional): Method to use ("Euler" or "Rk4"). Defaults to "euler".
-        ODEparams (list, optional): Optional extra parameters to pass to the ODE. Defaults to []
+        ODEparams (list, optional): Optional extra parameters to pass to the ODE. Defaults to no arguments
 
 	Returns:
 		list: List values for each t
 	"""
+
+	if ODEparams is None:
+		ODEparams = []
 
 	# get step function from method string
 	method = method.lower()
