@@ -125,7 +125,8 @@ def solve_ode(funcs, x0, t, hmax, method="euler", ODEparams=None):
 
 	x_out = np.empty((len(t), len(x)))
 
-	x_out[0, :] = x
+	if t[0] == 0:
+		x_out[0, :] = x
 
 	# Solve between values t_end and t_start
 	for row, t_end in enumerate(t[1:], start=1):
