@@ -116,7 +116,13 @@ def solve_ode(funcs, x0, t, hmax, method="euler", ODEparams=None):
 		raise ValueError(f"method must be one of {list(methods.keys())}")
 
 	# Set up intitial variables
+	# Clean t parameter
+	if np.can_cast(np.array(t), float):
+		t = np.array(t, dtype=float).flatten()
+	else:
+		raise ValueError(f"t cannot be cast to floats, recieved '{t}'")
 	t_start = t[0]
+
 	# Make sure x is a list of initial conditions
 	if np.can_cast(np.array(x0), float):
 		x = np.array(x0, dtype=float).flatten()
