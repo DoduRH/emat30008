@@ -5,17 +5,22 @@ class JacobianNotConvergedError(Exception):
 
 
 
-def jacobian_matrix(f, x, args, eps=1e-8):
+def jacobian_matrix(f, x, args=None, eps=1e-8):
     """Numerically approximate jacobian matrix for f starting from eps reducing by 1 order of magnitude each time until a stable solution is found
 
     Args:
         f (function): (Multivariate) function
         x (list): Points to calculate jacobian
+        args (list, optional): Arguments to pass to f. Defaults to no arguments.
         eps (float, optional): Range of f to use for calculating jacobian. Defaults to 1e-3.
 
     Returns:
         np.ndarray: Jacobian matrix approximation for f at x
     """
+
+    if args is None:
+        args = []
+
     with np.errstate(divide='ignore', invalid='ignore'):
         j = np.zeros([len(x), len(x)], dtype=np.float64)
         for i, _ in enumerate(x):
