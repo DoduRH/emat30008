@@ -118,14 +118,10 @@ def solve_ode(funcs, x0, t, hmax, method="euler", ODEparams=None):
 	# Set up intitial variables
 	t_start = t[0]
 	# Make sure x is a list of initial conditions
-	if type(x0) != np.ndarray:
-		if type(x0) == list:
-			x = np.array(x0)
-		else:
-			x = np.array([x0])
+	if np.can_cast(np.array(x0), float):
+		x = np.array(x0, dtype=float).flatten()
 	else:
-	# copy initial values list
-		x = x0.copy()
+		raise ValueError(f"x0 cannot be cast to float, recieved '{x0}'")
 
 	x_out = np.empty((len(t), len(x)))
 
