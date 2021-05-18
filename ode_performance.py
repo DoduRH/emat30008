@@ -3,6 +3,7 @@
 import time
 from ode_solver import solve_ode
 from math import nan, exp
+from measure_performance import perf_measure
 
 # %%
 # Set variables
@@ -21,18 +22,12 @@ h_values = {
 #}
 # %%
 # Run and measure execution time for each method
-# Number of seconds to run for
-num_seconds = 30
 
 for method, h in h_values.items():
     # Time it
     # Run for 30 seconds to reduce variance
-    start_time = time.time()
-    total = 0
-    while time.time() - start_time < num_seconds:
-        res = solve_ode(func, x0, t, h, method)
-        total += 1
-    end_time = time.time()
+    total_time, total_iterations, res = perf_measure(solve_ode, 30, func, x0, t, h, method)
+
     # Print error and execution time
     print(f"Error for {method} is {abs(res[-1][0] - analytic_sol(t[-1], nan))} with a step size of {h}")
-    print(f"and ran {total} itterations in {round(end_time - start_time, 3)} seconds giving {round(total/(end_time-start_time), 3)} iterations/second\n")
+    print(f"and ran {total_iterations} itterations in {round(total_time, 3)} seconds giving {round(total_iterations/total_time, 3)} iterations/second\n")
