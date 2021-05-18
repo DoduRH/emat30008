@@ -6,9 +6,9 @@ import matplotlib.pyplot as plt
 
 # %%
 # Setup system of equations
-funcs = [
-    lambda t, x, y: y, # x
-    lambda t, x, y: -x, # y
+funcs = lambda t, U: [
+    U[1], # x
+    -U[0], # y
 ]
 
 initial = [
@@ -24,16 +24,6 @@ analytic_sol = [
 ]
 
 stepsize = 0.1
-
-# %%
-def funcs_wrapper(U, t, funcs):
-    output = []
-    for f in funcs:
-        output.append(f(t, *U))
-    return output
-
-# Translate list of lambdas into function for scipy
-g = lambda U, t: funcs_wrapper(U, t, funcs)
 
 # %%
 # Get solutions for RK4 and euler
