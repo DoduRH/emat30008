@@ -1,6 +1,5 @@
 # %%
 # Import libraries
-import time
 from ode_solver import solve_ode
 from math import nan, exp
 from measure_performance import perf_measure
@@ -11,19 +10,20 @@ func = lambda t, x: x
 analytic_sol = lambda t, x: exp(t)
 t = [0, 1]
 x0 = 1
-h_values = {
-    "euler": 1e-6,
-    "rk4": 1e-1
-}
 
-#h_values = {
-#    "euler": 0.1,
-#    "rk4": 0.1
-#}
+measurements = [
+    dict(method="rk4", h=0.1),
+    dict(method="euler", h=0.1),
+    dict(method="euler", h=1e-6),
+]
+
 # %%
 # Run and measure execution time for each method
 
-for method, h in h_values.items():
+for test in measurements:
+    # Get values from dictionary
+    method = test['method']
+    h = test['h']
     # Time it
     # Run for 30 seconds to reduce variance
     total_time, total_iterations, res = perf_measure(solve_ode, 30, func, x0, t, h, method)
