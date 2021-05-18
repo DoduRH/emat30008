@@ -43,7 +43,10 @@ sols = {
 # Plot RK4, Euler and analytic solutions
 labels = []
 for i, (label, y) in enumerate(sols.items()):
-    plt.plot(t, y)
+    if "rk4" in label:
+        plt.plot(t, y, linewidth=3)
+    else:
+        plt.plot(t, y)
     labels.append(label)
 
 plt.xlabel("Time (t)")
