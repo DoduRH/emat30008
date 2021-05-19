@@ -42,3 +42,30 @@ plt.ylabel("Error")
 plt.legend(methods)
 
 plt.show()
+
+# %%
+# Calculate h values to give equal errors
+target_error = 1e-6
+euler_h = h_size[(np.abs(np.array(results['Euler']) - target_error)).argmin()]
+rk4_h = h_size[(np.abs(np.array(results['RK4']) - target_error)).argmin()]
+
+print(f"{euler_h=}")
+print(f"{rk4_h=}")
+
+# %%
+# Plot error against hmax on a log-log scale with lines showing error bars
+for data in methods:
+    plt.loglog(h_size, results[data])
+
+plt.axhline(target_error)
+
+plt.vlines([euler_h, rk4_h], ymin=0, ymax=target_error)
+
+
+plt.xlabel("HMAX")
+plt.ylabel("Error")
+
+plt.legend(methods)
+
+plt.show()
+# %%
