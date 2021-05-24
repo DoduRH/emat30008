@@ -1,7 +1,6 @@
 from root_finder import find_root
 import numpy as np
 import matplotlib.pyplot as plt
-from scipy.optimize import fsolve
 
 def tridiagonal_matrix(mx, main_diagonal, near_diagonal):
     """Create a matrix of shape (mx+1, mx+1) with values on the main diagonal and 1 cell above and below the main diagonal and zeros elsewhere
@@ -27,7 +26,7 @@ def tridiagonal_matrix(mx, main_diagonal, near_diagonal):
     np.fill_diagonal(arr, main_diagonal)
     return arr
 
-# NOTE: Is kwargs the best way to do this?
+# kwargs is used for compatibility with Crank-Nicholson
 def forward_euler_step(u_j, lmbda, mx, **kwargs):
     """Do a single step using the Forward Euler scheme
 
@@ -87,11 +86,11 @@ def crank_nicholson_step(u_j, lmbda, mx, solver, **kwargs):
 
     return u_jp1
 
-def solve_pde(mx, mt, L, T, initial_function, kappa, boundary_condition, pde_step_method="forwardEuler", root_finder=fsolve):
+def solve_pde(mx, mt, L, T, initial_function, kappa, boundary_condition, pde_step_method="forwardEuler", root_finder=find_root):
     """Solve pde with initial_conditions given by intitial_functions(x) and boundary conditions given by boundary_conditions(x, t)
 
     Args:
-        mx (int): Number of poitns in space
+        mx (int): Number of points in space
         mt (int): Number of points in time
         L (float): Maximum x value
         T (float): Maximum t value
@@ -99,13 +98,12 @@ def solve_pde(mx, mt, L, T, initial_function, kappa, boundary_condition, pde_ste
         kappa (float): Kappa value to use when solving
         boundary_condition (function): Function to give boundary conditions.  Must have signature f(x, t) -> float
         pde_step_method (str, optional): Method of 1 pde_step. Defaults to "forwardEuler".
-        root_finder (function, optional): Root finder to use if required by pde_step_method. Defaults to fsolve.
+        root_finder (function, optional): Root finder to use if required by pde_step_method. Defaults to find_root.
 
     Returns:
         array: Final values at t = T
     """
 
-    # TODO: Clean other inputs
     # Clean inputs
     if type(pde_step_method) == str:
         if pde_step_method not in methods.keys():
@@ -115,7 +113,20 @@ def solve_pde(mx, mt, L, T, initial_function, kappa, boundary_condition, pde_ste
             pde_step = methods[pde_step_method]
     else:
         pde_step = pde_step_method
+    
+    for var, name in zip([mx, mt], ["mx", "mt"]):
+        if not type(var) == int:
+            raise TypeError(f"{name} must be an integer")
 
+    for var, name in zip([L, T, kappa], ["L", "T", "kappa"]):
+        if not np.can_cast(var, float):
+            raise TypeError(f"{name} must be a float")
+    
+    # Construct boundary_function
+    if np.can_cast(np.array(boundary_condition), float) and len(boundary_condition) == 2:
+        boundary_function = lambda x, t: (L-x)*boundary_condition[0]+x*boundary_condition[1]
+    else:
+        boundary_function = boundary_condition
 
     # Set up the numerical environment variables
     x = np.linspace(0, L, mx+1)     # mesh points in space
@@ -137,8 +148,8 @@ def solve_pde(mx, mt, L, T, initial_function, kappa, boundary_condition, pde_ste
         u_j = pde_step(u_j, lmbda, mx, solver=root_finder)
 
         # Apply boundary conditions
-        u_j[0] = boundary_condition(0, t)
-        u_j[mx] = boundary_condition(L, t)
+        u_j[0] = boundary_function(0, t)
+        u_j[mx] = boundary_function(L, t)
 
     return u_j
 
@@ -170,9 +181,9 @@ def main():
     mt = 1000   # number of gridpoints in time
 
     # Solve for each method
-    forwardEuler = solve_pde(mx, mt, L, T, u_I, kappa, lambda x, t: 0, "forwardEuler", find_root)
+    forwardEuler = solve_pde(mx, mt, L, T, u_I, kappa, [0, 0], "forwardEuler", find_root)
     backwardEuler = solve_pde(mx, mt, L, T, u_I, kappa, lambda x, t: 0, "backwardEuler", find_root)
-    crankNicholson = solve_pde(mx, mt, L, T, u_I, kappa, lambda x, t: 0, "crankNicholson", find_root)
+    crankNicholson = solve_pde(mx, mt, L, T, u_I, kappa, [0, 0], "crankNicholson", find_root)
 
 
     # Plot the final result and exact solution
@@ -184,9 +195,11 @@ def main():
     xx = np.linspace(0,L,250)
     plt.plot(xx,u_exact(xx,T),'b-',label='exact')
 
+    plt.title("Comparison of Forward Euler, Backward Euler and\nCrank-Nicholson step functions")
+
     plt.xlabel('x')
     plt.ylabel('u(x,0.5)')
-    plt.legend(loc='upper right')
+    plt.legend(loc='lower center')
     plt.show()
 
 if __name__ == "__main__":
