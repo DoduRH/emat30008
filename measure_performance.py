@@ -19,7 +19,7 @@ def perf_measure(func, num_seconds, *args):
         raise TypeError("num_seconds must be castable to float")
     else:
         # Convert num_seconds to float
-        num_seconds = np.float(num_seconds)
+        num_seconds = float(num_seconds)
 
     # Check it is greater than 0
     if num_seconds <= 0:
@@ -28,15 +28,32 @@ def perf_measure(func, num_seconds, *args):
     # Initialise variables
     total_iterations = 0
     start_time = time.time()
+
+    # Initialise mean and variance
+    mean = 0
+    m2 = 0
+
     # Run the function loop
     while time.time() - start_time < num_seconds:
+        run_start = time.time()
         res = func(*args)
         total_iterations += 1
+
+        # Update variance calculation
+        last_run_time = time.time() - run_start
+        d1 = last_run_time - mean
+        mean += d1 / total_iterations
+        d2 = last_run_time - mean
+        m2 += d1 * d2
+
     end_time = time.time()
 
     total_time = end_time - start_time
 
-    return total_time, total_iterations, res
+    # Calculate variance from m2
+    variance = m2/total_iterations
+
+    return total_time, total_iterations, variance, res
 
 if __name__ == "__main__":
     # Test on sleep function
