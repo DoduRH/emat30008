@@ -27,13 +27,15 @@ measurements = [
 ]
 
 # %%
-# Plot function
-x = np.linspace(-2.5, 2.5, 100)
+# Plot functions
+x = np.linspace(-2, 2, 100)
 plt.plot(x, cheby(x), label="Chebyshev")
 plt.plot(x, cheby1(x), label="Chebyshev + 1")
-plt.plot(x, root2(x), label="$\\sqrt{2}$")
+fsol = fsolve(cheby1, 10)
+plt.scatter(fsol, cheby1(fsol), label="Fsolve Solution", color="orange")
+plt.plot(x, root2(x), label="$y=x^2 - 2$")
 plt.legend(loc="lower right")
-plt.ylim(-1, 1)
+plt.ylim(-2, 2)
 plt.title(f"Graph of test functions")
 plt.grid()
 plt.show()
@@ -49,15 +51,16 @@ for test in measurements:
     func = test['func']
     func_name = test['function_name']
     # Time it
-    # Run for 5 seconds to reduce variance
+    # Run for 1 second to reduce variance
     total_time, total_iterations, variance, res = perf_measure(method, 1, func, x0)
 
     it_per_second = round(total_iterations/total_time, 3)
 
+    # Append result to the results dataframe
     results = results.append({
         "Root Finding Method": method.__name__,
         "Function": func_name,
-        "Error": abs(*func(res)), # Error stored as string to lim
+        "Error": abs(*func(res)),
         "Total Iterations": total_iterations,
         "Iterations/second": it_per_second,
     }, ignore_index=True)
@@ -67,7 +70,8 @@ for test in measurements:
     print(f"ran {total_iterations} itterations in {round(total_time, 3)} seconds with a variance of {variance} giving {it_per_second} iterations/second\n")
 
 # %%
+# Save results
 output = results.copy()
-output.Error = results.Error.apply(lambda x: "%.3g" % x)
-output.to_latex("data/rootMeasurement.tex", index=False)
+output.Error = results.Error.apply(lambda x: "%.3g" % x) # Convert errors to strings to limit decimals
+output.to_latex("data/rootMeasurement.tex", index=False) # Save output directly to a latex file
 # %%
