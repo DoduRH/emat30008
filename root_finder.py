@@ -83,7 +83,7 @@ def find_root(f, u, args=None):
 
     u_old = np.ones(u.shape) * np.inf
 
-    while not np.allclose(u, u_old):
+    while not np.allclose(u, u_old, atol=1e-12):
         u_old = u
         u = newton_step(f, u, args)
         if not np.isfinite(u).all():
