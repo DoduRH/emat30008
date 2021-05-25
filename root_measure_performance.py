@@ -11,6 +11,7 @@ import pandas as pd
 # %%
 # Create Chebyshev polynomial
 cheby = np.polynomial.Chebyshev([0.1, 0.4, -0.5, 0.6])
+cheby1 = lambda x: cheby(x) + 1
 root2 = lambda x: x ** 2 - 2
 
 # Create tests
@@ -19,15 +20,22 @@ measurements = [
     dict(method=find_root, x0=1, func=cheby, function_name="chebychev"),
     dict(method=fsolve, x0=10, func=cheby, function_name="chebychev"),
     dict(method=fsolve, x0=1, func=cheby, function_name="chebychev"),
+    dict(method=find_root, x0=10, func=cheby1, function_name="chebychev + 1"),
+    dict(method=fsolve, x0=10, func=cheby1, function_name="chebychev + 1"),
     dict(method=find_root, x0=1, func=root2, function_name="root2"),
     dict(method=fsolve, x0=1, func=root2, function_name="root2"),
 ]
 
 # %%
 # Plot function
-x = np.linspace(-10, 10, 100)
-plt.plot(x, cheby(x))
+x = np.linspace(-2.5, 2.5, 100)
+plt.plot(x, cheby(x), label="Chebyshev")
+plt.plot(x, cheby1(x), label="Chebyshev + 1")
+plt.plot(x, root2(x), label="$\\sqrt{2}$")
+plt.legend(loc="lower right")
 plt.ylim(-1, 1)
+plt.title(f"Graph of test functions")
+plt.grid()
 plt.show()
 
 # %%
