@@ -108,10 +108,10 @@ if __name__ == "__main__":
     x = r[0]
     ys = r[1]
 
-    plt.xlabel("Beta")
+    plt.xlabel("C")
+    plt.ylabel("X")
+    plt.title("Graph showing numerical continuation on $y=x^3 - x + c$")
 
     plt.plot(x, ys)
-
-    plt.legend(["Stable Y", "Stable X", "Time"])
 
     plt.show()
