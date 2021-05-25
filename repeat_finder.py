@@ -123,6 +123,7 @@ def find_period(func, t0=1, tstep=10, tmax=np.inf, *args):
 
 
 if __name__ == "__main__":
+    # Define Lokta-Volterra equation
     alpha = 1
     delta = 0.1
     beta = 0.2
@@ -132,4 +133,22 @@ if __name__ == "__main__":
         beta * U[1] * (1 - (U[1]/U[0])), # dy/dt
     ]
 
-    print(find_period(lambda t: solve_ode(Lokta_Volterra, [0.25, 0.25], t, 0.1, "rk4")))
+    # Find ICs and period and unpack
+    *initial_conditions, period = find_period(lambda t: solve_ode(Lokta_Volterra, [0.25, 0.25], t, 0.1, "rk4"))
+
+    print(f"{initial_conditions=} {period=}")
+
+    # Plot results to show a single orbit
+    import matplotlib.pyplot as plt
+
+    t = np.linspace(0, period, 100)
+    vals = solve_ode(Lokta_Volterra, initial_conditions, t, 0.1, "RK4")
+
+    plt.plot(*vals.T, label="1 Period")
+    plt.scatter(initial_conditions[0], initial_conditions[1], label="Initial Conditions")
+    plt.title("Plot showing a single period of the Lokta-Volterra equations")
+    plt.legend(loc="upper left")
+    plt.xlabel("x")
+    plt.ylabel("y")
+    plt.show()
+    
