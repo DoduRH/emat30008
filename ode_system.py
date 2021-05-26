@@ -52,7 +52,7 @@ for i, (label, y) in enumerate(sols.items()):
 plt.xlabel("Time (t)")
 plt.ylabel("y")
 
-plt.title(f'Comparing the analytic and computed solutions to $\\ddot x = x$\nwith initial conditions x = {initial[0]}, y = {initial[1]} and step size of {stepsize} for ${min(t)} \\leq t \\leq {max(t)}$')
+plt.title(f'Comparing the analytic and computed solutions to $\\ddot x = -x$\nwith initial conditions x = {initial[0]}, y = {initial[1]} and step size of {stepsize} for ${min(t)} \\leq t \\leq {max(t)}$')
 
 plt.legend(labels)
 
