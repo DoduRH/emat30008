@@ -1,4 +1,3 @@
-from numerical_shooting import shoot
 from root_finder import find_root
 import numpy as np
 
@@ -18,37 +17,28 @@ def continuation(func, x0, par0, vary_par, par_max, discretisation=lambda x: x, 
         array: Array of points where func is stable
     """
 
-    output = []
+    # Calculate v0 and v1 to start the process
     v = []
-    v.append(np.append(x0, par0[vary_par]))
+    v.append(np.array((*solver(discretisation(func), x0, args=({vary_par: par0[vary_par]})), par0[vary_par])))
     v.append(np.array((*solver(discretisation(func), v[0][:-1], args=({vary_par: v[0][-1] + 0.1})), v[0][-1] + 0.1)))
-    import matplotlib.pyplot as plt
+
     while v[-1][-1] < par_max:
+        # Calculate the secant
         secant = v[-1] - v[-2]
 
+        # Make a prediction 
         predict = v[-1] + secant
 
-        g = lambda Vn, p: [
-            *discretisation(func)(Vn[:-1], {vary_par:  Vn[-1]}),
+        # Construct g
+        g = lambda Vn: [
+            *discretisation(func)(Vn[:-1], {vary_par: Vn[-1]}),
             np.dot(Vn - predict, secant),
         ]
 
-        v.append(solver(g, predict, args=({vary_par: predict[-1]})))
+        # Solve and append to v
+        v.append(solver(g, predict))
 
-        print(f"Found root {v[-1]} which gives {g(v[-1], {vary_par: predict[-1]})}")
-
-        xs = predict[1], v[-1][1]
-        ys = predict[0], v[-1][0]
-        plt.plot(xs, ys)
-        #print(f"Done {v[-1]=} {func(v[-1][:-1], p={vary_par: v[-1][-1]})=}")
-        output.append((v[-1][-1], *v[-1][:-1]))
-    
-    #par0[vary_par] = par_max
-    #v.append(np.array((*solver(discretisation(func), v[0][:-1], args=({vary_par: v[0][-1] + 0.1})), par_max)))
-    #print(f"Done {v[-1]=} {func(v[-1][:-1], p={vary_par: v[-1][-1]})=}")
-    #output.append((v[-1][-1], *v[-1][:-1]))
-
-    return output
+    return v
 
 if __name__ == "__main__":
     x0 = [0.2, 0.2]
