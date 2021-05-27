@@ -5,7 +5,6 @@ import numpy as np
 from ode_solver import solve_ode
 from numerical_shooting import shoot
 from scipy.optimize import fsolve # TODO: Remove this and only use find_root
-import pde_solver
 from pde_solver import solve_pde
 
 def Lokta_Volterra(t, U, p):
@@ -233,13 +232,14 @@ class numericalShootingTests(unittest.TestCase):
         pass
 
 class pdeSolverTests(unittest.TestCase):
-    def testForwardEuler(self):
-        """Check forwardEuler method is close to analytic solution
+    def PDEsetup(self):
+        """Return parameters for the PDE under test
         """
         # Set problem parameters/functions
         kappa = 1.0   # diffusion constant
         L=1.0         # length of spatial domain
         T=0.5         # total time to solve for
+
         def u_I(x):
             # initial temperature distribution
             y = np.sin(np.pi*x/L)
@@ -255,8 +255,19 @@ class pdeSolverTests(unittest.TestCase):
         mt = 1000   # number of gridpoints in time
 
         analytic = u_exact(np.linspace(0, L, mx+1), T)
+
+        return kappa, L, T, u_I, mx, mt, analytic
+
+    def testForwardEuler(self):
+        """Check forwardEuler method is close to analytic solution
+        """
+        # Get PDE from PDE setup
+        kappa, L, T, u_I, mx, mt, analytic = self.PDEsetup()
+
+        # run solve_pde
         numericSolution = solve_pde(mx, mt, L, T, u_I, kappa, lambda x, t: 0, "forwardEuler", find_root)
 
+        # Compare it to analytic solution
         self.assertTrue(np.allclose(numericSolution, analytic, atol=1e-3))
 
         pass
@@ -264,54 +275,27 @@ class pdeSolverTests(unittest.TestCase):
     def testBackwardEuler(self):
         """Check backwardEuler method is close to analytic solution
         """
-        # Set problem parameters/functions
-        kappa = 1.0   # diffusion constant
-        L=1.0         # length of spatial domain
-        T=0.5         # total time to solve for
-        def u_I(x):
-            # initial temperature distribution
-            y = np.sin(np.pi*x/L)
-            return y
 
-        def u_exact(x,t):
-            # the exact solution
-            y = np.exp(-kappa*(np.pi**2/L**2)*t)*np.sin(np.pi*x/L)
-            return y
-
-        # Set numerical parameters
-        mx = 30     # number of gridpoints in space
-        mt = 1000   # number of gridpoints in time
-
-        analytic = u_exact(np.linspace(0, L, mx+1), T)
+        # Get PDE from PDE setup
+        kappa, L, T, u_I, mx, mt, analytic = self.PDEsetup()
+        
+        # run solve_pde
         numericSolution = solve_pde(mx, mt, L, T, u_I, kappa, lambda x, t: 0, "backwardEuler", find_root)
 
+        # Compare it to analytic solution
         self.assertTrue(np.allclose(numericSolution, analytic, atol=2e-3))
         pass
 
     def testCrankNicholson(self):
         """Check crankNicholson method is close to analytic solution
         """
-        # Set problem parameters/functions
-        kappa = 1.0   # diffusion constant
-        L=1.0         # length of spatial domain
-        T=0.5         # total time to solve for
-        def u_I(x):
-            # initial temperature distribution
-            y = np.sin(np.pi*x/L)
-            return y
-
-        def u_exact(x,t):
-            # the exact solution
-            y = np.exp(-kappa*(np.pi**2/L**2)*t)*np.sin(np.pi*x/L)
-            return y
-
-        # Set numerical parameters
-        mx = 25     # number of gridpoints in space
-        mt = 1000   # number of gridpoints in time
-
-        analytic = u_exact(np.linspace(0, L, mx+1), T)
+        # Get PDE from PDE setup
+        kappa, L, T, u_I, mx, mt, analytic = self.PDEsetup()
+        
+        # run solve_pde
         numericSolution = solve_pde(mx, mt, L, T, u_I, kappa, lambda x, t: 0, "crankNicholson", find_root)
 
+        # Compare it to analytic solution
         self.assertTrue(np.allclose(numericSolution, analytic, atol=1e-3))
         pass
 
