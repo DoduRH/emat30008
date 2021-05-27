@@ -58,20 +58,15 @@ if __name__=="__main__":
 
     # Preadator-prey initial conditions
     initial = [
-        0.25,
-        0.25,
+        0.1,
+        0.2,
     ]
 
-    *periodic_conditions, period = shoot(funcs, initial)
-    print(f'{periodic_conditions=} {period=}')
+    *periodic_conditions, period = shoot(funcs, initial, approximate_period=20)
+    print(f'{periodic_conditions=} {period=} error={solve_ode(funcs, initial, [0, period], 0.1, method="rk4")[-1] - np.array(initial)}')
 
     # Plot the solution
     import matplotlib.pyplot as plt
-    plt.scatter(*initial, label="Initial conditions")
-
-    t = np.linspace(0, 120, 1000)
-    plt.plot(*solve_ode(funcs, initial, t, 0.1, method="rk4").T, label="Non periodic motion")
-
     plt.scatter(*periodic_conditions, label="Periodic initial conditions")
     t = np.linspace(0, period, 100)
     plt.plot(*solve_ode(funcs, periodic_conditions, t, 0.1, method="rk4").T, label="Periodic motion")
