@@ -127,13 +127,13 @@ if __name__ == "__main__":
     delta = 0.1
     beta = 0.2
 
-    Lokta_Volterra = lambda t, U: [
+    predator_prey = lambda t, U: [
         U[0] * (1 - U[0]) - (alpha * U[0] * U[1]) / (delta + U[0]), # dx/dt
         beta * U[1] * (1 - (U[1]/U[0])), # dy/dt
     ]
 
     # Find ICs and period and unpack
-    *initial_conditions, period = find_period(lambda t: solve_ode(Lokta_Volterra, [0.25, 0.25], t, 0.1, "rk4"))
+    *initial_conditions, period = find_period(lambda t: solve_ode(predator_prey, [0.25, 0.25], t, 0.1, "rk4"))
 
     print(f"{initial_conditions=} {period=}")
 
@@ -141,11 +141,17 @@ if __name__ == "__main__":
     import matplotlib.pyplot as plt
 
     t = np.linspace(0, period, 100)
-    vals = solve_ode(Lokta_Volterra, initial_conditions, t, 0.1, "RK4")
+    vals = solve_ode(predator_prey, initial_conditions, t, 0.1, "RK4")
+
+    t = np.linspace(0, 120, 1000)
+    plt.plot(*solve_ode(predator_prey, [0.25, 0.25], t, 0.1, method="rk4").T, label="Periodic motion")
 
     plt.plot(*vals.T, label="1 Period")
-    plt.scatter(initial_conditions[0], initial_conditions[1], label="Initial Conditions", color="red")
-    plt.title("Plot showing a single period of the preadator-prey equations")
+    plt.scatter(initial_conditions[0], initial_conditions[1], label="Periodic Initial Conditions", color="red")
+    plt.title("Plot showing a the repeat finder using the predator-prey equations")
+
+    plt.scatter(0.25, 0.25, label="Initial Conditions")
+
     plt.legend(loc="upper left")
     plt.xlabel("x")
     plt.ylabel("y")
