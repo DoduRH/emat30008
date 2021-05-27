@@ -105,7 +105,6 @@ def find_period(func, t0=1, tstep=10, tmax=np.inf, *args):
 
     t = np.arange(0, t0, 0.1)
 
-    # Would require func to take t and x0
     *initials, period = find_repeats(func(t, *args))
 
     while period == -1 and t0 < tmax:
@@ -145,8 +144,8 @@ if __name__ == "__main__":
     vals = solve_ode(Lokta_Volterra, initial_conditions, t, 0.1, "RK4")
 
     plt.plot(*vals.T, label="1 Period")
-    plt.scatter(initial_conditions[0], initial_conditions[1], label="Initial Conditions")
-    plt.title("Plot showing a single period of the Lokta-Volterra equations")
+    plt.scatter(initial_conditions[0], initial_conditions[1], label="Initial Conditions", color="red")
+    plt.title("Plot showing a single period of the preadator-prey equations")
     plt.legend(loc="upper left")
     plt.xlabel("x")
     plt.ylabel("y")
