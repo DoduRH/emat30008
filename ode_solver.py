@@ -71,7 +71,7 @@ def solve_to(step_func, ODE, x0, t0, t1, hmax, ODEparams=None):
 		ODEparams = []
 
 	t = t0
-	x = x0
+	x_old = x = x0
 	with np.errstate(divide='ignore', invalid='ignore'):
 		while t + hmax < t1:
 			x_old = x
