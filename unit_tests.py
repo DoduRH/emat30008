@@ -1,3 +1,4 @@
+from numerical_continuation import continuation
 from repeat_finder import TimePeriodNotFoundError, find_period
 from root_finder import find_root, jacobian_matrix
 import unittest
@@ -253,6 +254,31 @@ class numericalShootingTests(unittest.TestCase):
         # Ensure solution after 1 period is within 5% of the starting value
         self.assertTrue(np.allclose([x, y], solve_ode(hopf, [x, y], [0, period], hmax=0.1, method="rk4", ODEparams=[params])[-1], rtol=0.05))
 
+        pass
+
+class continuationTests(unittest.TestCase):
+    def test_cubic(self):
+        """Test continuation method on the cubic equation x^3 - x + c
+        """
+        cubicInitial = [1.5]
+        cubicPar = dict(c=-2)
+        cubic = lambda U, p: [
+            U[0] ** 3 - U[0] + p['c']
+        ]
+
+        results = continuation(
+            cubic,  # the equation to use
+            cubicInitial,  # the initial state
+            cubicPar,  # the initial parameters
+            vary_par="c",  # the parameter to vary
+            par_max=2,
+            discretisation=lambda x: x,  # the discretisation to use
+            solver=fsolve,  # the solver to use
+        )
+
+        # Check every value  in results is a root
+        for r in results:
+            self.assertAlmostEqual(0, cubic([r[0]], {"c": r[1]})[0])
         pass
 
 class pdeSolverTests(unittest.TestCase):
