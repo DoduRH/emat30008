@@ -4,14 +4,44 @@ import unittest
 import numpy as np
 from ode_solver import solve_ode
 from numerical_shooting import shoot
-from scipy.optimize import fsolve # TODO: Remove this and only use find_root
+from scipy.optimize import fsolve
 from pde_solver import solve_pde
+from measure_performance import perf_measure
+import time
 
 def Lokta_Volterra(t, U, p):
     x = U[0] * (1 - U[0]) - (p['alpha'] * U[0] * U[1]) / (p['delta'] + U[0]) # dx/dt
     y = p['beta'] * U[1] * (1 - (U[1]/U[0])) # dy/dt
 
     return [x, y]
+
+class performanceMeasurementTests(unittest.TestCase):
+    def test_perf_measure_quick(self):
+        """Test performance measurement with time.sleep
+        """
+        func = time.sleep
+        sleep_seconds = 0.1
+        run_seconds = 1
+        total_time, number_of_iterations, variance, result = perf_measure(func, run_seconds, sleep_seconds)
+
+        self.assertEqual(None, result)
+        self.assertAlmostEqual(number_of_iterations, run_seconds/sleep_seconds)
+        pass
+
+    def test_perf_measure_slow(self):
+        """Test performance measurement with time.sleep and a return value
+        """
+        def func(x):
+            time.sleep(x)
+            return "Return Value"
+
+        sleep_seconds = 0.5
+        run_seconds = 1
+        total_time, number_of_iterations, variance, result = perf_measure(func, run_seconds, sleep_seconds)
+
+        self.assertEqual(func(0), result)
+        self.assertAlmostEqual(number_of_iterations, run_seconds/sleep_seconds)
+        pass
 
 class ODETests(unittest.TestCase):
     def test_1d(self):
