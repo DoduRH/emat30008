@@ -45,23 +45,41 @@ def shoot(f, initial, approximate_period=None, tmax=np.inf, solver=find_root, OD
 # %%
 if __name__=="__main__":
     # Setup equations
-    # Lokta Volterra variables
+    # Preadator-prey variables
     alpha = 1
     delta = 0.1
     beta = 0.2
 
-    # Lokta-Volterra equations
+    # Preadator-prey equations
     funcs = lambda t, U: [
         U[0] * (1 - U[0]) - (alpha * U[0] * U[1]) / (delta + U[0]), # dU[0]/dt
         beta * U[1] * (1 - (U[1]/U[0])), # dU[1]/dt
     ]
 
-    # Lokta-Voltera initial conditions
+    # Preadator-prey initial conditions
     initial = [
         0.25,
         0.25,
     ]
 
-    print(f'{shoot(funcs, initial)=}')
+    *periodic_conditions, period = shoot(funcs, initial)
+    print(f'{periodic_conditions=} {period=}')
 
+    # Plot the solution
+    import matplotlib.pyplot as plt
+    plt.scatter(*initial, label="Initial conditions")
+
+    t = np.linspace(0, 120, 1000)
+    plt.plot(*solve_ode(funcs, initial, t, 0.1, method="rk4").T, label="Non periodic motion")
+
+    plt.scatter(*periodic_conditions, label="Periodic initial conditions")
+    t = np.linspace(0, period, 100)
+    plt.plot(*solve_ode(funcs, periodic_conditions, t, 0.1, method="rk4").T, label="Periodic motion")
+
+    plt.xlabel("X")
+    plt.ylabel("Y")
+    plt.title("Shooting using the preadator-prey equation")
+
+    plt.legend()
+    plt.show()
 # %%
