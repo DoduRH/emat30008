@@ -81,12 +81,6 @@ class ODETests(unittest.TestCase):
         self.assertTrue(np.allclose(analytic_sol, rk4_sol, rtol=0.1), "RK4 2d failed")
         pass
 
-    def test_3d(self):
-        """Test system of 3 ODEs agains analytic solution
-        """
-        # TODO: Add test
-        pass
-
     def test_undefined_arithmetic(self):
         """Check ArithmeticError is raised when equations have arithmetic error (e.g. divide-by-zero)
         """
