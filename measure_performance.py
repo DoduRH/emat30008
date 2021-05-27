@@ -10,7 +10,7 @@ def perf_measure(func, num_seconds, *args):
         num_seconds (float): Number of seconds to measure the performance over
 
     Returns:
-        tuple: (total time, number of iterations, result of 1 call)
+        tuple: (total time, number of iterations, variance, result of 1 call)
     """
 
     # Check number of seconds is valid
