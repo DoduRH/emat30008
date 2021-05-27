@@ -41,30 +41,49 @@ def continuation(func, x0, par0, vary_par, par_max, discretisation=lambda x: x, 
     return v
 
 if __name__ == "__main__":
-    x0 = [0.2, 0.2]
+    # Imports only needed in main
+    from numerical_shooting import shoot
+    from scipy.optimize import fsolve
+    import matplotlib.pyplot as plt
 
-    # Hopf Bifurcation
+    # Setup Hopf Bifurcation equation for continuation
     hopf = lambda t, U, p: [
-                p['beta'] * U[0] - U[1] - U[0] * (U[0] ** 2 + U[1] ** 2),
-        U[0] +  p['beta'] * U[1] -        U[1] * (U[0] ** 2 + U[1] ** 2),
+        p['beta'] * U[0]         - U[1] - U[0] * (U[0] ** 2 + U[1] ** 2),
+        U[0]         + p['beta'] * U[1] - U[1] * (U[0] ** 2 + U[1] ** 2),
     ]
 
     hopfPar = dict(
-        beta = -1,
+        beta = 0.1,
     )
 
     hopfInitial = [
-        1.5,
-        1.5,
+        1,
+        1,
     ]
 
-    from scipy.optimize import fsolve
+    hopfInitial = shoot(hopf, hopfInitial, solver=fsolve, ODEparams=[hopfPar], approximate_period=5)
 
+    # Setup cubic equation for continuation
     cubicInitial = [1.5]
     cubicPar = dict(c=-2)
     cubic = lambda U, p: [
         U[0] ** 3 - U[0] + p['c']
     ]
+
+    # Plot cubic equation for c=0.2
+    plt.xlabel("X")
+    plt.ylabel("Y")
+    plt.title("Graph showing $y=x^3 - x + c$ for $c=0.2$")
+    x = np.linspace(-1.5, 1, 1000)
+    # Find roots of cubic
+    root1 = fsolve(cubic, -1.2, {"c": 0.2})
+    root2 = fsolve(cubic, 0.7, {"c": 0.2})
+    root3 = fsolve(cubic, 0.4, {"c": 0.2})
+    plt.scatter([root1, root2, root3], [0,0,0], label="Roots")
+    plt.plot(x, x ** 3 - x + 0.2)
+    plt.grid()
+    plt.legend()
+    plt.show()
 
     # Continuation on the cubic equation
     results = continuation(
@@ -77,30 +96,36 @@ if __name__ == "__main__":
         solver=fsolve,  # the solver to use
     )
 
-    # Continuation on the hopf bifurcation equation
-    # results = continuation(
-    #     hopf,  # the ODE to use
-    #     hopfInitial,  # the initial state
-    #     hopfPar,  # the initial parameters
-    #     vary_par="beta",  # the parameter to vary
-    #     par_max=2,
-    #     delta_multiplier=0.1, # max step size
-    #     discretisation=lambda f: lambda g, p: shoot(f=f, initial=g, approximate_solution=g, ODEparams=[p]),  # the discretisation to use
-    #     solver=fsolve,  # the solver to use
-    # )
+    # Plot results from cubic
     
-    import matplotlib.pyplot as plt
-    import numpy as np
-
     r = np.array(results).T
-    x = r[0]
-    ys = r[1]
+    ys = r[0]
+    xs = r[-1]
 
     plt.xlabel("C")
     plt.ylabel("X")
     plt.title("Graph showing numerical continuation on $y=x^3 - x + c$")
 
-    plt.plot(x, ys)
-    plt.scatter(x, ys)
+    plt.plot(xs, ys)
+    plt.scatter(xs, ys)
+    plt.grid()
 
     plt.show()
+
+    # Continuation on the hopf bifurcation equation
+    # NOTE: Doesnt work
+    results = continuation(
+        hopf,  # the ODE to use
+        hopfInitial,  # the initial state
+        hopfPar,  # the initial parameters
+        vary_par="beta",  # the parameter to vary
+        par_max=2,
+        discretisation=lambda f: lambda g, p: shoot(f=f, initial=g[:-1], approximate_period=g[-1], ODEparams=[p], solver=fsolve),  # the discretisation to use
+        solver=fsolve,  # the solver to use
+    )
+
+    fig = plt.figure()
+    ax = fig.add_subplot(111, projection='3d')
+    ax.plot(*np.stack(results).T)
+    plt.show()
+    
